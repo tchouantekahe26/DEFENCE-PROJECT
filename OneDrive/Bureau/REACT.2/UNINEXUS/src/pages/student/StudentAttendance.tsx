@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
 import { StatCard } from "../../components/common/StatCard";
@@ -10,11 +10,14 @@ import {
   XCircle,
   Clock,
   Info,
+  TrendingDown,
 } from "lucide-react";
+import { useTheme } from "../../context/ThemeContext";
 
 export const StudentAttendance: React.FC = () => {
   const { user } = useAuth();
   const { attendanceRecords, courses, enrollments } = useData();
+  const { isDark } = useTheme();
 
   const studentId = user?.id || "usr-student-1";
 
@@ -37,6 +40,8 @@ export const StudentAttendance: React.FC = () => {
         ? 9 // 64% warning demo
         : 13; // default healthy attendance
 
+    const lateCount = courseRecords.filter((r) => r.status === "Late").length;
+    const absentCount = totalClasses - attendedClasses;
     const percentage = Math.round((attendedClasses / totalClasses) * 100);
     const isWarning = percentage < 75;
 
@@ -46,7 +51,8 @@ export const StudentAttendance: React.FC = () => {
       lecturer: course?.lecturerName || "Faculty Instructor",
       totalClasses,
       attendedClasses,
-      absentCount: totalClasses - attendedClasses,
+      lateCount,
+      absentCount,
       percentage,
       isWarning,
     };
@@ -61,22 +67,39 @@ export const StudentAttendance: React.FC = () => {
       : 89;
 
   const lowAttendanceCount = courseStats.filter((c) => c.isWarning).length;
+  const totalLateCount = courseStats.reduce((sum, c) => sum + c.lateCount, 0);
+
+  // Attendance trend data (mock data for demonstration)
+  const attendanceTrend = useMemo(() => {
+    return [
+      { week: "Week 1", percentage: 95 },
+      { week: "Week 2", percentage: 92 },
+      { week: "Week 3", percentage: 88 },
+      { week: "Week 4", percentage: 86 },
+      { week: "Week 5", percentage: 89 },
+      { week: "Week 6", percentage: 87 },
+    ];
+  }, []);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">
+        <h1 className={`text-2xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
           Attendance Record & Analytics
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"} mt-1`}>
           Track course attendance percentages, presence history and eligibility requirements
         </p>
       </div>
 
       {/* Warning Notice if any course < 75% */}
       {lowAttendanceCount > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4">
+        <div className={`border rounded-2xl p-5 flex items-start gap-4 transition ${
+          isDark
+            ? "bg-amber-900/20 border-amber-800"
+            : "bg-amber-50 border-amber-200"
+        }`}>
           <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
             <AlertTriangle size={22} />
           </div>
@@ -110,12 +133,43 @@ export const StudentAttendance: React.FC = () => {
           subtitle="≥75% attendance rate"
         />
         <StatCard
-          title="Attendance Warnings"
-          value={lowAttendanceCount}
-          icon={AlertTriangle}
+          title="Late Arrivals"
+          value={totalLateCount}
+          icon={Clock}
           color="amber"
-          subtitle="Requires attention"
+          subtitle="Attendance Warnings"
         />
+      </div>
+
+      {/* Attendance Trend Chart */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">
+              Attendance Trend
+            </h2>
+            <p className="text-xs text-slate-500">
+              Weekly attendance percentage over the semester
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-end justify-between gap-2 h-32">
+          {attendanceTrend.map((item) => (
+            <div key={item.week} className="flex flex-col items-center flex-1">
+              <div className="w-full bg-slate-100 rounded-t-xl relative group">
+                <div
+                  className="w-full bg-gradient-to-t from-emerald-500 to-emerald-400 rounded-t-xl transition-all duration-300 hover:from-emerald-600 hover:to-emerald-500"
+                  style={{ height: `${(item.percentage / 100) * 120}px` }}
+                />
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  {item.percentage}%
+                </div>
+              </div>
+              <span className="text-xs font-bold text-slate-600 mt-2">{item.week}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Course-by-Course Attendance Progress */}

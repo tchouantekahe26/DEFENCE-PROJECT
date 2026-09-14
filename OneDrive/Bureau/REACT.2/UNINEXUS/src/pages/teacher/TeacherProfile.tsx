@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { PasswordField } from "../../components/common/PasswordField";
 import {
   User,
   Mail,
@@ -31,6 +32,14 @@ export const TeacherProfile: React.FC = () => {
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setAvatar(String(reader.result));
+    reader.readAsDataURL(file);
+  };
 
   const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -239,8 +248,7 @@ export const TeacherProfile: React.FC = () => {
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                   Current Password
                 </label>
-                <input
-                  type="password"
+                <PasswordField
                   required
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
@@ -253,8 +261,7 @@ export const TeacherProfile: React.FC = () => {
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                     New Password
                   </label>
-                  <input
-                    type="password"
+                  <PasswordField
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
@@ -265,8 +272,7 @@ export const TeacherProfile: React.FC = () => {
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                     Confirm New Password
                   </label>
-                  <input
-                    type="password"
+                  <PasswordField
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}

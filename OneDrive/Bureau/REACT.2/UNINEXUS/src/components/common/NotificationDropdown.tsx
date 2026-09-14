@@ -74,11 +74,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200/80 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+      className="absolute right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150"
     >
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
         <div className="flex items-center gap-2">
-          <h4 className="font-bold text-slate-800 text-sm">Notifications</h4>
+          <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Notifications</h4>
           {unreadCount > 0 && (
             <span className="bg-indigo-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
               {unreadCount} new
@@ -96,7 +96,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         )}
       </div>
 
-      <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+      <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
         {filteredNotifications.length === 0 ? (
           <div className="p-8 text-center text-slate-400">
             <Bell size={28} className="mx-auto mb-2 opacity-40" />
@@ -108,7 +108,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               key={notif.id}
               onClick={() => markNotificationAsRead(notif.id)}
               className={`p-4 transition hover:bg-slate-50 cursor-pointer flex gap-3 ${
-                !notif.isRead ? "bg-indigo-50/30" : ""
+                !notif.isRead ? "bg-indigo-50/30 dark:bg-indigo-950/30" : ""
               }`}
             >
               <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
@@ -116,14 +116,14 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-bold text-slate-900 truncate">
+                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                     {notif.title}
                   </p>
                   <span className="text-[10px] text-slate-400 shrink-0">
                     {notif.timestamp}
                   </span>
                 </div>
-                <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2 leading-relaxed">
                   {notif.message}
                 </p>
                 {notif.actionLink && (
@@ -144,11 +144,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         )}
       </div>
 
-      <div className="p-3 text-center border-t border-slate-100 bg-slate-50/50">
+      <div className="p-3 text-center border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
         <Link
           to={`/${role}/notifications`}
           onClick={onClose}
-          className="text-xs font-semibold text-slate-600 hover:text-indigo-600 transition"
+          className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition"
         >
           View all notifications
         </Link>

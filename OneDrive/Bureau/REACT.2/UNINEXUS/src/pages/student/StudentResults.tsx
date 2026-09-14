@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
 import { Badge } from "../../components/common/Badge";
-import { Award, Download, GraduationCap, CheckCircle2 } from "lucide-react";
+import { Award, Download, GraduationCap, CheckCircle2, TrendingUp, BarChart3 } from "lucide-react";
+import { useTheme } from "../../context/ThemeContext";
 
 export const StudentResults: React.FC = () => {
   const { user, studentProfile } = useAuth();
   const { marks } = useData();
+  const { isDark } = useTheme();
 
   const [selectedSemester, setSelectedSemester] = useState("Semester 1 (2024/2025)");
   const [selectedProgram, setSelectedProgram] = useState("Computer Science");
@@ -30,22 +32,61 @@ export const StudentResults: React.FC = () => {
   const calculatedGpa =
     totalCredits > 0 ? (totalQualityPoints / totalCredits).toFixed(2) : "3.42";
 
+  // Analytics calculations
+  const gradeDistribution = useMemo(() => {
+    const dist = {
+      A: 0,
+      B: 0,
+      C: 0,
+      D: 0,
+      F: 0,
+    };
+    studentMarks.forEach((m) => {
+      const grade = m.grade;
+      if (grade in dist) dist[grade]++;
+    });
+    return dist;
+  }, [studentMarks]);
+
+  const performanceMetrics = useMemo(() => {
+    const avgMark = studentMarks.length > 0
+      ? (studentMarks.reduce((sum, m) => sum + m.totalMark, 0) / studentMarks.length).toFixed(1)
+      : "0";
+    
+    const excellentCount = studentMarks.filter((m) => m.totalMark >= 80).length;
+    const goodCount = studentMarks.filter((m) => m.totalMark >= 70 && m.totalMark < 80).length;
+    const passCount = studentMarks.filter((m) => m.totalMark >= 50 && m.totalMark < 70).length;
+    const failCount = studentMarks.filter((m) => m.totalMark < 50).length;
+
+    return {
+      avgMark,
+      excellentCount,
+      goodCount,
+      passCount,
+      failCount,
+    };
+  }, [studentMarks]);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className={`text-2xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
             My Marks & Academic Results
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"} mt-1`}>
             Official semester examination grades, credit values and transcript metrics
           </p>
         </div>
 
         <button
           onClick={() => window.print()}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs self-start sm:self-auto"
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border text-xs font-bold transition shadow-2xs self-start sm:self-auto ${
+            isDark
+              ? "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
+              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+          }`}
         >
           <Download size={15} />
           <span>Download Transcript</span>
@@ -53,7 +94,54 @@ export const StudentResults: React.FC = () => {
       </div>
 
       {/* Main Results Container */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+      <div className={`rounded-3xl p-6 sm:p-8 border shadow-xs space-y-6 transition ${
+        isDark
+          ? "bg-slate-900 border-slate-800"
+          : "bg-white border-slate-200/80"
+      }`}>
+        {/* Performance Analytics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className={`p-4 rounded-2xl border transition ${
+            isDark
+              ? "bg-gradient-to-br from-emerald-900/20 to-teal-900/20 border-emerald-800"
+              : "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200"
+          }`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className={`text-xs font-bold uppercase ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>Average Mark</span>
+              <TrendingUp size={16} className="text-emerald-600" />
+            </div>
+            <p className={`text-2xl font-black ${isDark ? "text-emerald-300" : "text-emerald-900"}`}>{performanceMetrics.avgMark}</p>
+            <p className={`text-xs mt-1 ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>Across {studentMarks.length} courses</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-50 border border-emerald-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-emerald-700 uppercase">Excellent (80+)</span>
+              <BarChart3 size={16} className="text-emerald-600" />
+            </div>
+            <p className="text-2xl font-black text-emerald-900">{performanceMetrics.excellentCount}</p>
+            <p className="text-xs text-emerald-700 mt-1">High Performance Courses</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-sky-50 to-blue-50 border border-sky-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-sky-700 uppercase">Good (70-79)</span>
+              <CheckCircle2 size={16} className="text-sky-600" />
+            </div>
+            <p className="text-2xl font-black text-sky-900">{performanceMetrics.goodCount}</p>
+            <p className="text-xs text-sky-700 mt-1">Solid Performance</p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-amber-700 uppercase">Needs Work (Below 70)</span>
+              <Award size={16} className="text-amber-600" />
+            </div>
+            <p className="text-2xl font-black text-amber-900">{performanceMetrics.passCount + performanceMetrics.failCount}</p>
+            <p className="text-xs text-amber-700 mt-1">Requires Improvement</p>
+          </div>
+        </div>
+
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6 border-b border-slate-100">
           <div>

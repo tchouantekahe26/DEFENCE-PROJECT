@@ -16,7 +16,6 @@ import {
   Settings,
   LogOut,
   MessageSquare,
-  FileEdit,
   FileCheck,
   GraduationCap,
   Bell,
@@ -119,7 +118,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           },
           { label: "Marks Management", path: "/teacher/marks", icon: Award },
           { label: "Students", path: "/teacher/students", icon: Users },
-          { label: "Assignments", path: "/teacher/assignments", icon: FileEdit },
           { label: "Announcements", path: "/teacher/announcements", icon: Megaphone },
           { label: "Settings", path: "/teacher/settings", icon: Settings },
         ];
@@ -204,7 +202,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       // Search announcements
       announcements
-        .filter((a) => a.title.toLowerCase().includes(q) || a.content.toLowerCase().includes(q))
+        .filter((a) => a.title.toLowerCase().includes(q) || a.description.toLowerCase().includes(q))
         .slice(0, 2)
         .forEach((a) => {
           results.push({
@@ -567,15 +565,16 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               {isDark ? <Sun size={17} /> : <Moon size={17} />}
             </button>
 
-            {/* Emergency Button */}
-            <button
-              onClick={() => setEmergencyModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 text-xs font-bold transition border border-red-200 dark:border-red-800/50"
-              title="Send Emergency Alert"
-            >
-              <ShieldAlert size={16} />
-              <span className="hidden sm:inline">Emergency</span>
-            </button>
+            {role !== "teacher" && (
+              <button
+                onClick={() => setEmergencyModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 text-xs font-bold transition border border-red-200 dark:border-red-800/50"
+                title="Send Emergency Alert"
+              >
+                <ShieldAlert size={16} />
+                <span className="hidden sm:inline">Emergency</span>
+              </button>
+            )}
 
             {/* Notification Bell */}
             <div className="relative">
@@ -621,7 +620,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </header>
 
         {/* Main Content Area */}
-        <main className={`flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"} transition-colors duration-200`}>
+        <main className={`flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8 ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"} transition-colors duration-200`}>
           {children}
         </main>
       </div>

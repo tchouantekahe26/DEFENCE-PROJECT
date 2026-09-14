@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
+import { useTheme } from "../../context/ThemeContext";
 import { Badge } from "../../components/common/Badge";
 import {
   Award,
@@ -16,6 +17,7 @@ import type { MarkRecord } from "../../types";
 export const TeacherMarks: React.FC = () => {
   const { user } = useAuth();
   const { courses, users, marks, saveMarks } = useData();
+  const { isDark } = useTheme();
 
   const teacherId = user?.id || "usr-teacher-1";
   const myClasses = courses.filter(
@@ -117,10 +119,10 @@ export const TeacherMarks: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className={`text-2xl font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
             Marks & Grade Entry
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className={`text-sm mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
             Input continuous assessments, exam scores, and submit for Dean approval
           </p>
         </div>
@@ -128,7 +130,7 @@ export const TeacherMarks: React.FC = () => {
         <select
           value={selectedCourseCode}
           onChange={(e) => setSelectedCourseCode(e.target.value)}
-          className="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm font-bold text-slate-800 outline-none focus:border-sky-500 shadow-2xs"
+          className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold outline-none focus:border-sky-500 shadow-2xs ${isDark ? "bg-slate-800 border-slate-700 text-slate-100" : "bg-white border-slate-200 text-slate-800"}`}
         >
           {myClasses.map((c) => (
             <option key={c.id} value={c.code}>
@@ -140,19 +142,19 @@ export const TeacherMarks: React.FC = () => {
 
       {/* Analytics Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className={`${isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200/80"} p-5 rounded-2xl border shadow-xs flex items-center justify-between`}>
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
               Class Average
             </span>
-            <h3 className="text-2xl font-black text-slate-900 mt-1">{avgMark}%</h3>
+            <h3 className={`text-2xl font-black mt-1 ${isDark ? "text-slate-100" : "text-slate-900"}`}>{avgMark}%</h3>
           </div>
           <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center font-bold">
             <BarChart2 size={20} />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className={`${isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200/80"} p-5 rounded-2xl border shadow-xs flex items-center justify-between`}>
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
               Pass Rate
@@ -166,7 +168,7 @@ export const TeacherMarks: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className={`${isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200/80"} p-5 rounded-2xl border shadow-xs flex items-center justify-between`}>
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
               Grading Status
@@ -182,9 +184,9 @@ export const TeacherMarks: React.FC = () => {
       </div>
 
       {/* Main Grade Sheet Table */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+      <div className={`${isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200/80"} rounded-3xl p-6 sm:p-8 border shadow-xs space-y-6`}>
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900">
+          <h2 className={`text-base font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
             Student Marks Sheet — {currentCourse.code} ({currentCourse.title})
           </h2>
           <span className="text-xs text-slate-500 font-medium">
@@ -195,7 +197,7 @@ export const TeacherMarks: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-wider">
+              <tr className={`border-b text-xs font-bold text-slate-400 uppercase tracking-wider ${isDark ? "border-slate-800" : "border-slate-100"}`}>
                 <th className="pb-3">Student ID</th>
                 <th className="pb-3">Student Name</th>
                 <th className="pb-3 text-center w-32">Coursework (/30)</th>
@@ -205,7 +207,7 @@ export const TeacherMarks: React.FC = () => {
                 <th className="pb-3 text-right">Grade Point</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className={`divide-y ${isDark ? "divide-slate-800" : "divide-slate-100"}`}>
               {studentUsers.map((stu) => {
                 const cur = localMarks[stu.id] || { cw: 0, ex: 0 };
                 const total = cur.cw + cur.ex;
@@ -216,7 +218,7 @@ export const TeacherMarks: React.FC = () => {
                     <td className="py-3.5 font-mono font-bold text-sky-700 text-xs">
                       {stu.identifier}
                     </td>
-                    <td className="py-3.5 font-bold text-slate-900 flex items-center gap-2.5">
+                    <td className={`py-3.5 font-bold flex items-center gap-2.5 ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                       <img
                         src={
                           stu.avatar ||

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
 import { StatCard } from "../../components/common/StatCard";
+import { useTheme } from "../../context/ThemeContext";
 import {
   GraduationCap,
   CalendarCheck,
@@ -24,7 +25,8 @@ import {
 
 export const StudentDashboard: React.FC = () => {
   const { user, studentProfile } = useAuth();
-  const { timetableSlots, announcements, attendanceRecords, justifications } = useData();
+  const { timetableSlots, announcements, attendanceRecords, justifications, courses, enrollments, assignments, submissions, marks } = useData();
+  const { isDark } = useTheme();
 
   const studentId = user?.id || "usr-student-1";
 
@@ -46,10 +48,37 @@ export const StudentDashboard: React.FC = () => {
     (j) => j.studentId === studentId && j.status === "APPROVED"
   );
 
+  // Course performance calculations
+  const enrolledCourses = enrollments.filter(
+    (e) => e.studentId === studentId && e.status === "registered"
+  );
+  const courseCount = enrolledCourses.length;
+  
+  // Assignment tracking
+  const courseAssignments = assignments.filter((a) =>
+    enrolledCourses.some((e) => e.courseCode === a.courseCode)
+  );
+  const submittedAssignments = submissions.filter(
+    (s) => s.studentId === studentId && s.status === "submitted"
+  );
+  const gradedAssignments = submissions.filter(
+    (s) => s.studentId === studentId && s.status === "graded"
+  );
+
+  // Performance calculation
+  const studentMarks = marks.filter((m) => m.studentId === studentId && m.status === "published");
+  const avgGrade = studentMarks.length > 0
+    ? (studentMarks.reduce((sum, m) => sum + m.totalMark, 0) / studentMarks.length).toFixed(1)
+    : "85";
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* ================= GREETING & PROFILE HERO ================= */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+      <div className={`rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden transition ${
+        isDark
+          ? "bg-gradient-to-r from-emerald-700 to-teal-800"
+          : "bg-gradient-to-r from-emerald-600 to-teal-700"
+      }`}>
         <div className="absolute -top-16 -right-16 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-emerald-900/20 rounded-full blur-2xl pointer-events-none" />
 
@@ -107,8 +136,8 @@ export const StudentDashboard: React.FC = () => {
       {/* ================= 4 STAT CARDS ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
-          title="Cumulative GPA"
-          value={studentProfile?.cgpa ? studentProfile.cgpa.toFixed(2) : "3.42"}
+          title="Current GPA"
+          value={avgGrade}
           icon={GraduationCap}
           color="emerald"
           badge="Good Standing"
@@ -122,18 +151,18 @@ export const StudentDashboard: React.FC = () => {
           subtitle="Target: ≥75% min required"
         />
         <StatCard
-          title="Absence Records"
-          value={myAbsences.length}
-          icon={FileCheck}
-          color="amber"
-          subtitle={`${excusedAbsences.length} excused, ${pendingJustifications.length} pending review`}
+          title="Enrolled Courses"
+          value={courseCount}
+          icon={Award}
+          color="purple"
+          subtitle={`${submittedAssignments.length} assignments submitted`}
         />
         <StatCard
-          title="Unread Messages"
-          value="3"
-          icon={MessageSquare}
+          title="Grades Published"
+          value={studentMarks.length}
+          icon={FileCheck}
           color="indigo"
-          subtitle="Campus community channels"
+          subtitle={`${gradedAssignments.length} assignments graded`}
         />
       </div>
 
@@ -287,7 +316,7 @@ export const StudentDashboard: React.FC = () => {
                     {item.title}
                   </h4>
                   <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                    {item.content}
+                    {item.description}
                   </p>
                 </div>
               ))}

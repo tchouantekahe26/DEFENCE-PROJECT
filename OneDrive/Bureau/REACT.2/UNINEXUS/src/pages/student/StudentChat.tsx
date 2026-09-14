@@ -11,10 +11,12 @@ import {
   Paperclip,
   Smile,
 } from "lucide-react";
+import { useTheme } from "../../context/ThemeContext";
 
 export const StudentChat: React.FC = () => {
   const { user } = useAuth();
   const { chatMessages, sendChatMessage, users } = useData();
+  const { isDark } = useTheme();
 
   const [activeTab, setActiveTab] = useState<"channels" | "direct">("channels");
   const [selectedChannel, setSelectedChannel] = useState("general");
@@ -70,26 +72,38 @@ export const StudentChat: React.FC = () => {
         <h1 className="text-2xl font-bold text-slate-900">
           Community Chat
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"} mt-1`}>
           Connect with peers, study groups, course lecturers and student clubs
         </p>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs h-[640px] grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 overflow-hidden">
+      <div className={`rounded-3xl border shadow-lg h-[640px] grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 overflow-hidden transition ${
+        isDark 
+          ? "bg-slate-900 border-slate-800" 
+          : "bg-white border-slate-200/80"
+      }`}>
         {/* ================= LEFT SIDEBAR ================= */}
-        <div className="border-r border-slate-200/80 flex flex-col bg-slate-50/50">
+        <div className={`border-r flex flex-col transition ${
+          isDark 
+            ? "border-slate-800 bg-slate-950" 
+            : "border-slate-200/80 bg-slate-50/50"
+        }`}>
           {/* Tab Switcher */}
-          <div className="p-4 border-b border-slate-200/80">
-            <div className="grid grid-cols-2 bg-slate-200/70 p-1 rounded-xl">
+          <div className={`p-4 border-b transition ${isDark ? "border-slate-800" : "border-slate-200/80"}`}>
+            <div className={`grid grid-cols-2 p-1 rounded-xl transition ${
+              isDark 
+                ? "bg-slate-800" 
+                : "bg-slate-200/70"
+            }`}>
               <button
                 onClick={() => {
                   setActiveTab("channels");
                   setSelectedRecipientId(null);
                 }}
-                className={`py-1.5 text-xs font-bold rounded-lg transition ${
+                className={`py-1.5 text-xs font-bold rounded-lg transition-colors ${
                   activeTab === "channels"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? isDark ? "bg-slate-700 text-white shadow-md" : "bg-white text-slate-900 shadow-xs"
+                    : isDark ? "text-slate-400 hover:text-slate-200" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 Channels
@@ -101,10 +115,10 @@ export const StudentChat: React.FC = () => {
                     setSelectedRecipientId(directUsers[0].id);
                   }
                 }}
-                className={`py-1.5 text-xs font-bold rounded-lg transition ${
+                className={`py-1.5 text-xs font-bold rounded-lg transition-colors ${
                   activeTab === "direct"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? isDark ? "bg-slate-700 text-white shadow-md" : "bg-white text-slate-900 shadow-xs"
+                    : isDark ? "text-slate-400 hover:text-slate-200" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 Direct
@@ -119,10 +133,10 @@ export const StudentChat: React.FC = () => {
                 <button
                   key={ch.id}
                   onClick={() => setSelectedChannel(ch.id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-2xl text-left transition ${
+                  className={`w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-colors ${
                     selectedChannel === ch.id
                       ? "bg-emerald-600 text-white shadow-xs font-bold"
-                      : "hover:bg-slate-100 text-slate-700 font-medium"
+                      : isDark ? "hover:bg-slate-800 text-slate-300 font-medium" : "hover:bg-slate-100 text-slate-700 font-medium"
                   }`}
                 >
                   <Hash size={18} className="shrink-0 opacity-80" />
@@ -132,7 +146,7 @@ export const StudentChat: React.FC = () => {
                       className={`text-[10px] truncate ${
                         selectedChannel === ch.id
                           ? "text-emerald-100"
-                          : "text-slate-400"
+                          : isDark ? "text-slate-500" : "text-slate-400"
                       }`}
                     >
                       {ch.desc}
@@ -145,10 +159,10 @@ export const StudentChat: React.FC = () => {
                 <button
                   key={u.id}
                   onClick={() => setSelectedRecipientId(u.id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-2xl text-left transition ${
+                  className={`w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-colors ${
                     selectedRecipientId === u.id
                       ? "bg-emerald-600 text-white shadow-xs font-bold"
-                      : "hover:bg-slate-100 text-slate-700 font-medium"
+                      : isDark ? "hover:bg-slate-800 text-slate-300 font-medium" : "hover:bg-slate-100 text-slate-700 font-medium"
                   }`}
                 >
                   <img
@@ -165,7 +179,7 @@ export const StudentChat: React.FC = () => {
                       className={`text-[10px] capitalize truncate ${
                         selectedRecipientId === u.id
                           ? "text-emerald-100"
-                          : "text-slate-400"
+                          : isDark ? "text-slate-500" : "text-slate-400"
                       }`}
                     >
                       {u.role} • {u.department}
@@ -178,21 +192,29 @@ export const StudentChat: React.FC = () => {
         </div>
 
         {/* ================= RIGHT CHAT PANE ================= */}
-        <div className="md:col-span-2 lg:col-span-3 flex flex-col h-full bg-white">
+        <div className={`md:col-span-2 lg:col-span-3 flex flex-col h-full transition ${
+          isDark ? "bg-slate-800" : "bg-white"
+        }`}>
           {/* Channel / DM Header */}
-          <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
+          <div className={`p-4 sm:p-5 border-b flex items-center justify-between transition ${
+            isDark ? "border-slate-700" : "border-slate-100"
+          }`}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold transition ${
+                isDark 
+                  ? "bg-emerald-900/30 text-emerald-400" 
+                  : "bg-emerald-50 text-emerald-700"
+              }`}>
                 {activeTab === "channels" ? <Hash size={20} /> : <User size={20} />}
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
                   {activeTab === "channels"
                     ? `#${selectedChannel}`
                     : directUsers.find((u) => u.id === selectedRecipientId)?.name ||
                       "Direct Chat"}
                 </h3>
-                <p className="text-[11px] text-slate-400">
+                <p className={`text-[11px] ${isDark ? "text-slate-400" : "text-slate-400"}`}>
                   {activeTab === "channels"
                     ? "Open student & faculty channel"
                     : "Direct Peer-to-Peer messaging"}
@@ -202,9 +224,11 @@ export const StudentChat: React.FC = () => {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className={`flex-1 overflow-y-auto p-6 space-y-4 transition ${
+            isDark ? "bg-slate-800" : "bg-white"
+          }`}>
             {visibleMessages.length === 0 ? (
-              <div className="text-center py-20 text-slate-400">
+              <div className={`text-center py-20 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
                 <MessageSquare size={36} className="mx-auto mb-2 opacity-30" />
                 <p className="text-xs font-semibold">No messages yet</p>
                 <p className="text-[11px] text-slate-400 mt-1">
@@ -223,7 +247,11 @@ export const StudentChat: React.FC = () => {
                     }`}
                   >
                     {!isMe && (
-                      <div className="w-8 h-8 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 transition ${
+                        isDark 
+                          ? "bg-slate-700 text-slate-300" 
+                          : "bg-slate-200 text-slate-700"
+                      }`}>
                         {msg.senderName.charAt(0)}
                       </div>
                     )}
@@ -232,12 +260,14 @@ export const StudentChat: React.FC = () => {
                       className={`max-w-[75%] p-4 rounded-3xl text-xs sm:text-sm leading-relaxed ${
                         isMe
                           ? "bg-emerald-600 text-white rounded-br-xs shadow-xs"
-                          : "bg-slate-100 text-slate-800 rounded-tl-xs"
+                          : isDark 
+                            ? "bg-slate-700 text-slate-100 rounded-tl-xs shadow-md" 
+                            : "bg-slate-100 text-slate-800 rounded-tl-xs"
                       }`}
                     >
                       {!isMe && (
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-bold text-xs text-slate-900">
+                          <span className={`font-bold text-xs ${isDark ? "text-slate-200" : "text-slate-900"}`}>
                             {msg.senderName}
                           </span>
                           <span className="text-[10px] text-slate-400 uppercase font-semibold">
@@ -265,7 +295,11 @@ export const StudentChat: React.FC = () => {
           {/* Message Input */}
           <form
             onSubmit={handleSendMessage}
-            className="p-4 border-t border-slate-100 flex items-center gap-3 bg-white"
+            className={`p-4 border-t flex items-center gap-3 transition ${
+              isDark 
+                ? "border-slate-700 bg-slate-800" 
+                : "border-slate-100 bg-white"
+            }`}
           >
             <input
               type="text"
@@ -274,7 +308,11 @@ export const StudentChat: React.FC = () => {
               placeholder={`Message ${
                 activeTab === "channels" ? `#${selectedChannel}` : "..."
               }`}
-              className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-50 transition"
+              className={`flex-1 px-4 py-3 border rounded-2xl text-xs sm:text-sm outline-none transition-all ${
+                isDark 
+                  ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-400 focus:bg-slate-700 focus:ring-4 focus:ring-emerald-500/20" 
+                  : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-50"
+              }`}
             />
             <button
               type="submit"

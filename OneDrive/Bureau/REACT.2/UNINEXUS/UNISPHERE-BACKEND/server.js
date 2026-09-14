@@ -4,6 +4,7 @@ import { connectDB, sequelize } from './db.connect.js';
 import userRouter from './user/user.route.js';
 import justificationRouter from './justification/justification.route.js';
 
+
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -20,3 +21,4 @@ app.listen(3000, async () => {
   await sequelize.sync({ alter: true });
   console.log('Server is running on port 3000');
 });
+export {app};
