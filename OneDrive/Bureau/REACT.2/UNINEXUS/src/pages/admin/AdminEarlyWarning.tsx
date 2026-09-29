@@ -15,11 +15,25 @@ import {
 import type { EarlyWarningStudent } from "../../types";
 
 export const AdminEarlyWarning: React.FC = () => {
-  const { earlyWarningStudents, addEarlyWarningIntervention } = useData();
+  const { earlyWarningStudents, addEarlyWarningIntervention, users } = useData();
 
   const [selectedStudent, setSelectedStudent] = useState<EarlyWarningStudent | null>(null);
   const [search, setSearch] = useState("");
   const [note, setNote] = useState("");
+
+  const criticalCount = earlyWarningStudents.filter(
+    (s) => s.riskType.toLowerCase().includes("critical") || s.riskType.toLowerCase().includes("risk")
+  ).length;
+  const warningsCount = earlyWarningStudents.filter(
+    (s) => s.riskType.toLowerCase().includes("warning") || s.riskType.toLowerCase().includes("probation")
+  ).length;
+  const studentUsers = users.filter((u) => u.role === "student");
+  const flaggedMatrics = new Set(earlyWarningStudents.map((s) => s.matricNumber));
+  const goodStandingCount = studentUsers.filter((u) => !flaggedMatrics.has(u.identifier)).length;
+  const goodStandingRate =
+    studentUsers.length > 0
+      ? `${((goodStandingCount / studentUsers.length) * 100).toFixed(1)}%`
+      : "100%";
 
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +72,7 @@ export const AdminEarlyWarning: React.FC = () => {
             <span className="text-xs font-bold text-red-600 uppercase tracking-wider">
               Critical Risk Students
             </span>
-            <h3 className="text-3xl font-black text-slate-900 mt-1">8</h3>
+            <h3 className="text-3xl font-black text-slate-900 mt-1">{criticalCount}</h3>
             <p className="text-xs text-slate-400 mt-0.5">Below 50% avg / &lt;70% attendance</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center font-bold">
@@ -71,7 +85,7 @@ export const AdminEarlyWarning: React.FC = () => {
             <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">
               Probation Warnings
             </span>
-            <h3 className="text-3xl font-black text-slate-900 mt-1">15</h3>
+            <h3 className="text-3xl font-black text-slate-900 mt-1">{warningsCount}</h3>
             <p className="text-xs text-slate-400 mt-0.5">Attendance or coursework notices</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
@@ -84,8 +98,8 @@ export const AdminEarlyWarning: React.FC = () => {
             <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
               Good Standing Rate
             </span>
-            <h3 className="text-3xl font-black text-slate-900 mt-1">94.2%</h3>
-            <p className="text-xs text-slate-400 mt-0.5">1,176 active students</p>
+            <h3 className="text-3xl font-black text-slate-900 mt-1">{goodStandingRate}</h3>
+            <p className="text-xs text-slate-400 mt-0.5">{goodStandingCount} active students</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
             <ShieldCheck size={24} />
@@ -116,51 +130,59 @@ export const AdminEarlyWarning: React.FC = () => {
         </div>
 
         <div className="divide-y divide-slate-100">
-          {filtered.map((item) => (
-            <div
-              key={item.id}
-              className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/60 transition px-2 rounded-2xl"
-            >
-              <div className="flex items-center gap-4">
-                <img
-                  src={
-                    item.avatar ||
-                    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80"
-                  }
-                  alt={item.studentName}
-                  className="w-11 h-11 rounded-2xl object-cover ring-1 ring-slate-200 shrink-0"
-                />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-slate-900 text-sm">
-                      {item.studentName}
-                    </h4>
-                    <span className="text-xs font-mono font-semibold text-slate-400">
-                      {item.matricNumber}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100">
-                      {item.riskType}
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      {item.department} • Attendance: <strong>{item.attendanceRate}%</strong> • Avg:{" "}
-                      <strong>{item.averageMark}%</strong>
-                    </span>
+          {filtered.length === 0 ? (
+            <div className="p-12 text-center text-slate-400">
+              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+              <p className="font-bold text-slate-700">All Students in Good Standing</p>
+              <p className="text-xs mt-1">No students have been flagged for institutional retention risks.</p>
+            </div>
+          ) : (
+            filtered.map((item) => (
+              <div
+                key={item.id}
+                className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/60 transition px-2 rounded-2xl"
+              >
+                <div className="flex items-center gap-4">
+                  <img
+                    src={
+                      item.avatar ||
+                      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80"
+                    }
+                    alt={item.studentName}
+                    className="w-11 h-11 rounded-2xl object-cover ring-1 ring-slate-200 shrink-0"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-slate-900 text-sm">
+                        {item.studentName}
+                      </h4>
+                      <span className="text-xs font-mono font-semibold text-slate-400">
+                        {item.matricNumber}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100">
+                        {item.riskType}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        {item.department} • Attendance: <strong>{item.attendanceRate}%</strong> • Avg:{" "}
+                        <strong>{item.averageMark}%</strong>
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-3 self-end sm:self-auto">
-                <button
-                  onClick={() => setSelectedStudent(item)}
-                  className="px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-bold text-xs border border-indigo-200 transition"
-                >
-                  Admin Case File
-                </button>
+                <div className="flex items-center gap-3 self-end sm:self-auto">
+                  <button
+                    onClick={() => setSelectedStudent(item)}
+                    className="px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-bold text-xs border border-indigo-200 transition"
+                  >
+                    Admin Case File
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

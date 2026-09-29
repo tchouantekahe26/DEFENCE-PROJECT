@@ -29,7 +29,7 @@ export const StudentAiAssistant: React.FC = () => {
     {
       sender: "ai",
       text: `Hello ${
-        user?.name?.split(" ")[0] || "Alex"
+        user?.name?.split(" ")[0] || "Student"
       }! 👋 I am your intelligent UniNexus academic advisor and assistant. Ask me anything about your courses, timetable, attendance rules, GPA calculation, or campus emergency contacts.`,
       timestamp: "Just now",
     },
@@ -246,14 +246,14 @@ export const StudentAiAssistant: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-6 border border-emerald-200/60">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mb-3">
+          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-6 border border-indigo-200/60">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center mb-3 shadow-sm">
               <Sparkles size={20} />
             </div>
-            <h4 className="text-sm font-bold text-emerald-950">
+            <h4 className="text-sm font-bold text-indigo-950">
               Instant Academic Insights
             </h4>
-            <p className="text-xs text-emerald-800 mt-1 leading-relaxed">
+            <p className="text-xs text-indigo-800 mt-1 leading-relaxed">
               Powered by university policy handbooks, course catalogs, syllabus archives,
               and semester schedules.
             </p>

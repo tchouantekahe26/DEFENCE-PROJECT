@@ -1,10 +1,16 @@
 import Result from './results.model.js';
+import { Op } from 'sequelize';
 
 export const getResults = async (req, res) => {
   try {
-    const { studentId, courseCode, status } = req.query;
+    const { studentId, matricNumber, courseCode, status } = req.query;
     const where = {};
-    if (studentId) where.studentId = studentId;
+    if (studentId || matricNumber) {
+      where[Op.or] = [
+        ...(studentId ? [{ studentId }] : []),
+        ...(matricNumber ? [{ matricNumber }] : []),
+      ];
+    }
     if (courseCode) where.courseCode = courseCode;
     if (status) where.status = status;
 

@@ -32,8 +32,8 @@ export const AdminCourses: React.FC = () => {
   const [faculty, setFaculty] = useState("School of Computing");
   const [level, setLevel] = useState("HND 2");
   const [semester, setSemester] = useState("Semester 1");
-  const [lecturerName, setLecturerName] = useState("Dr. Robert Smith");
-  const [lecturerId, setLecturerId] = useState("usr-teacher-1");
+  const [lecturerName, setLecturerName] = useState("Mrs. TCHOUTOUO");
+  const [lecturerId, setLecturerId] = useState("usr-teacher-tchoutouo");
   const [description, setDescription] = useState("");
   const [classroom, setClassroom] = useState("Room 101");
   const [scheduleDays, setScheduleDays] = useState("Monday, Wednesday");

@@ -1,0 +1,12 @@
+import './auth.test.js';
+import './user.test.js';
+import './course.test.js';
+import './attendance.test.js';
+import './results.test.js';
+import './assignment.test.js';
+import './timetable.test.js';
+import './announcement.test.js';
+import './notification.test.js';
+import './chat.test.js';
+import './emergency.test.js';
+import './earlyWarning.test.js';

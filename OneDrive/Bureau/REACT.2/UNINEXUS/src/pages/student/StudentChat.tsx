@@ -31,8 +31,8 @@ export const StudentChat: React.FC = () => {
     { id: "events", name: "events", desc: "Clubs, Hackathons & Seminars" },
   ];
 
-  const currentUserId = user?.id || "usr-student-1";
-  const currentUserName = user?.name || "Alex Johnson";
+  const currentUserId = user?.id || "";
+  const currentUserName = user?.name || "Student";
 
   // Filter messages
   const visibleMessages = chatMessages.filter((msg) => {

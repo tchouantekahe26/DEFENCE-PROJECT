@@ -114,7 +114,7 @@ export const StudentNotifications: React.FC = () => {
               }`}
             >
               <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
-                {getCategoryIcon(notif.category)}
+                {getCategoryIcon(notif.category || "announcement")}
               </div>
 
               <div className="flex-1 min-w-0">

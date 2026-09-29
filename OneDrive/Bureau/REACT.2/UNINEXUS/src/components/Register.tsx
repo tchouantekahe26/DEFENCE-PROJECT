@@ -13,6 +13,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { apiService } from "../services/api";
+import { PolicyModal } from "./common/PolicyModal";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -21,6 +22,8 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [policyModalOpen, setPolicyModalOpen] = useState(false);
+  const [policyModalTab, setPolicyModalTab] = useState<"terms" | "privacy">("terms");
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -30,6 +33,7 @@ const Register = () => {
     confirmPassword: "",
     department: "",
     level: "",
+    className: "BA1A",
     courses: "",
     terms: false,
   });
@@ -236,73 +240,19 @@ const Register = () => {
 
             </div>
 
-            {/* ================= ROLE SELECTOR ================= */}
-            <div className="mb-7">
-
-              <label className="block text-sm font-medium text-slate-700 mb-3">
-                Account type
-              </label>
-
-              <div className="grid grid-cols-2 gap-3">
-
-                {/* Student */}
-                <button
-                  type="button"
-                  onClick={() => setRole("student")}
-                  className={`p-4 rounded-xl border-2 transition text-left ${
-                    role === "student"
-                      ? "border-indigo-600 bg-indigo-50"
-                      : "border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <GraduationCap
-                    size={22}
-                    className={
-                      role === "student"
-                        ? "text-indigo-600"
-                        : "text-slate-400"
-                    }
-                  />
-
-                  <p className="font-semibold text-slate-800 mt-2">
-                    Student
-                  </p>
-
-                  <p className="text-xs text-slate-500 mt-1">
-                    Access academic services
-                  </p>
-                </button>
-
-                {/* Teacher */}
-                <button
-                  type="button"
-                  onClick={() => setRole("teacher")}
-                  className={`p-4 rounded-xl border-2 transition text-left ${
-                    role === "teacher"
-                      ? "border-indigo-600 bg-indigo-50"
-                      : "border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <BriefcaseBusiness
-                    size={22}
-                    className={
-                      role === "teacher"
-                        ? "text-indigo-600"
-                        : "text-slate-400"
-                    }
-                  />
-
-                  <p className="font-semibold text-slate-800 mt-2">
-                    Teacher
-                  </p>
-
-                  <p className="text-xs text-slate-500 mt-1">
-                    Manage academic activities
-                  </p>
-                </button>
-
+            {/* ================= ROLE NOTICE ================= */}
+            <div className="mb-7 p-4 rounded-xl border border-indigo-200 bg-indigo-50/70 flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-indigo-600 text-white shrink-0 mt-0.5">
+                <GraduationCap size={20} />
               </div>
-
+              <div>
+                <p className="font-semibold text-slate-800 text-sm">
+                  Student Registration Portal
+                </p>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                  Self-registration is available for students. Faculty and staff accounts are provisioned exclusively by the System Administrator.
+                </p>
+              </div>
             </div>
 
             {/* ================= FORM ================= */}
@@ -649,14 +599,29 @@ const Register = () => {
                   className="mt-1 w-4 h-4 accent-indigo-600"
                 />
 
-                <label className={`text-sm ${errors.terms ? "text-red-500" : "text-slate-500"}`}>
-                  I agree to the UniNexus{" "}
-                  <a
-                    href="#"
-                    className="text-indigo-600 font-medium"
+                <label className={`text-sm ${errors.terms ? "text-red-500" : "text-slate-500 dark:text-slate-400"}`}>
+                  I agree to the UNISPHERE{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPolicyModalTab("terms");
+                      setPolicyModalOpen(true);
+                    }}
+                    className="text-indigo-600 dark:text-indigo-400 font-semibold underline hover:text-indigo-800 dark:hover:text-indigo-300 transition cursor-pointer"
                   >
-                    terms and privacy policy
-                  </a>
+                    Terms of Service
+                  </button>{" "}
+                  and{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPolicyModalTab("privacy");
+                      setPolicyModalOpen(true);
+                    }}
+                    className="text-indigo-600 dark:text-indigo-400 font-semibold underline hover:text-indigo-800 dark:hover:text-indigo-300 transition cursor-pointer"
+                  >
+                    Privacy Policy
+                  </button>
                   .
                 </label>
 
@@ -705,6 +670,14 @@ const Register = () => {
         </div>
 
       </div>
+
+      <PolicyModal
+        isOpen={policyModalOpen}
+        onClose={() => setPolicyModalOpen(false)}
+        initialTab={policyModalTab}
+        isAgreed={formData.terms}
+        onAccept={() => setFormData((prev) => ({ ...prev, terms: true }))}
+      />
 
     </div>
   );

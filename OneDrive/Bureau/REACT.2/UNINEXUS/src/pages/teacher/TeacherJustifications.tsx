@@ -62,7 +62,7 @@ export const TeacherJustifications: React.FC = () => {
   const handleApprove = async (just: AbsenceJustification) => {
     setActionLoading(true);
     try {
-      await approveJustification(just.id, user?.name || "Dr. Robert Smith");
+      await approveJustification(just.id, user?.name || "Mrs. TCHOUTOUO");
       setStatusFeedback(`Justification for ${just.studentName} (${just.courseCode}) has been APPROVED. Absence is marked as EXCUSED.`);
       setTimeout(() => setStatusFeedback(""), 6000);
       setViewDocModalOpen(false);
@@ -86,7 +86,7 @@ export const TeacherJustifications: React.FC = () => {
       await rejectJustification(
         activeJustification.id,
         rejectionReason.trim(),
-        user?.name || "Dr. Robert Smith"
+        user?.name || "Mrs. TCHOUTOUO"
       );
       setStatusFeedback(
         `Justification for ${activeJustification.studentName} has been REJECTED. Absence remains NOT EXCUSED.`
@@ -110,17 +110,19 @@ export const TeacherJustifications: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-sky-600 to-indigo-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#4f46e5] via-[#4338ca] to-[#3730a3] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute -top-24 -left-24 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-indigo-900/40 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-bold uppercase tracking-wider text-sky-200 mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-xs font-bold uppercase tracking-wider text-indigo-200 mb-2">
               <FileCheck size={14} />
               Absence Review Portal
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Absence Justifications
             </h1>
-            <p className="text-sky-100 text-sm mt-1 max-w-xl">
+            <p className="text-indigo-100 text-sm mt-1 max-w-xl">
               Review and verify absence justification submissions, inspect supporting documents, and update student attendance status.
             </p>
           </div>
@@ -130,13 +132,13 @@ export const TeacherJustifications: React.FC = () => {
               <p className="text-2xl font-black">
                 {myJustifications.filter((j) => j.status === "PENDING").length}
               </p>
-              <p className="text-[11px] uppercase font-bold text-sky-200">Pending Review</p>
+              <p className="text-[11px] uppercase font-bold text-indigo-200">Pending Review</p>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 text-center border border-white/20">
               <p className="text-2xl font-black">
                 {myJustifications.filter((j) => j.status === "APPROVED").length}
               </p>
-              <p className="text-[11px] uppercase font-bold text-sky-200">Approved</p>
+              <p className="text-[11px] uppercase font-bold text-indigo-200">Approved</p>
             </div>
           </div>
         </div>
@@ -144,12 +146,12 @@ export const TeacherJustifications: React.FC = () => {
 
       {/* Feedback Banner */}
       {statusFeedback && (
-        <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 dark:bg-sky-950/40 dark:border-sky-800 text-sky-800 dark:text-sky-200 flex items-center justify-between animate-in fade-in">
+        <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 dark:bg-indigo-950/40 dark:border-indigo-800 text-indigo-800 dark:text-indigo-200 flex items-center justify-between animate-in fade-in">
           <div className="flex items-center gap-3">
-            <CheckCircle2 size={20} className="text-sky-600 dark:text-sky-400 shrink-0" />
+            <CheckCircle2 size={20} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
             <p className="text-sm font-semibold">{statusFeedback}</p>
           </div>
-          <button onClick={() => setStatusFeedback("")} className="text-sky-600 hover:text-sky-800">
+          <button onClick={() => setStatusFeedback("")} className="text-indigo-600 hover:text-indigo-800">
             <X size={18} />
           </button>
         </div>
@@ -407,6 +409,49 @@ export const TeacherJustifications: React.FC = () => {
                   <ExternalLink size={13} />
                   Open Document
                 </a>
+              </div>
+
+              {/* Embedded Document Preview */}
+              <div className="mt-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-3 overflow-hidden">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Official Document Inspection
+                  </span>
+                  <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                    {activeJustification.documentType || "PDF Document"}
+                  </span>
+                </div>
+
+                {activeJustification.documentUrl && (activeJustification.documentUrl.startsWith("data:image") || activeJustification.documentName?.match(/\.(jpg|jpeg|png|webp)$/i)) ? (
+                  <div className="max-h-72 overflow-auto rounded-xl bg-white dark:bg-slate-800 p-2 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                    <img
+                      src={activeJustification.documentUrl}
+                      alt="Medical Justification Proof"
+                      className="max-h-68 max-w-full object-contain rounded-lg shadow-xs"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-44 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center p-4 text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 flex items-center justify-center mb-2">
+                      <FileCheck size={24} />
+                    </div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      Medical Certificate / Justification Proof
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Verified document signed by hospital or attending authority
+                    </p>
+                    <a
+                      href={activeJustification.documentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition"
+                    >
+                      <ExternalLink size={12} />
+                      Inspect High-Resolution File
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
 

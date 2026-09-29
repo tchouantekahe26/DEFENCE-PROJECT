@@ -2,8 +2,9 @@ import React, { useState, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
 import { Badge } from "../../components/common/Badge";
-import { Award, Download, GraduationCap, CheckCircle2, TrendingUp, BarChart3 } from "lucide-react";
+import { Award, Download, GraduationCap, CheckCircle2, TrendingUp, BarChart3, FileText } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
+import { downloadTranscriptPDF } from "../../services/transcriptPdf";
 
 export const StudentResults: React.FC = () => {
   const { user, studentProfile } = useAuth();
@@ -12,15 +13,39 @@ export const StudentResults: React.FC = () => {
 
   const [selectedSemester, setSelectedSemester] = useState("Semester 1 (2024/2025)");
   const [selectedProgram, setSelectedProgram] = useState("Computer Science");
+  const [downloading, setDownloading] = useState(false);
 
-  const studentId = user?.id || "usr-student-1";
+  const studentId = user?.id || "";
 
-  // Filter published marks for this student
+  // Filter marks for this student (directly visible upon teacher entry, no admin approval wait)
   const studentMarks = marks.filter(
     (m) =>
-      m.studentId === studentId &&
-      (m.status === "published" || m.status === "submitted")
+      m.studentId === studentId ||
+      String(m.studentId) === String(studentId) ||
+      (user?.identifier && m.matricNumber && m.matricNumber.trim().toUpperCase() === user.identifier.trim().toUpperCase()) ||
+      (user?.name && m.studentName && m.studentName.trim().toUpperCase() === user.name.trim().toUpperCase())
   );
+
+  const handleDownloadTranscript = () => {
+    if (!user) return;
+    if (studentMarks.length === 0) {
+      alert("No official grades recorded yet to generate a transcript.");
+      return;
+    }
+    setDownloading(true);
+    try {
+      downloadTranscriptPDF({
+        student: studentProfile || user,
+        marks: studentMarks,
+        semester: selectedSemester,
+        academicYear: "2025/2026",
+      });
+    } catch (err) {
+      console.error("Failed to generate transcript PDF:", err);
+    } finally {
+      setTimeout(() => setDownloading(false), 800);
+    }
+  };
 
   const totalCredits = studentMarks.reduce((sum, m) => sum + m.creditHours, 0);
 
@@ -30,11 +55,11 @@ export const StudentResults: React.FC = () => {
     0
   );
   const calculatedGpa =
-    totalCredits > 0 ? (totalQualityPoints / totalCredits).toFixed(2) : "3.42";
+    totalCredits > 0 ? (totalQualityPoints / totalCredits).toFixed(2) : "0.00";
 
   // Analytics calculations
   const gradeDistribution = useMemo(() => {
-    const dist = {
+    const dist: Record<string, number> = {
       A: 0,
       B: 0,
       C: 0,
@@ -81,15 +106,16 @@ export const StudentResults: React.FC = () => {
         </div>
 
         <button
-          onClick={() => window.print()}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border text-xs font-bold transition shadow-2xs self-start sm:self-auto ${
+          onClick={handleDownloadTranscript}
+          disabled={downloading}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-bold transition shadow-sm self-start sm:self-auto disabled:opacity-50 cursor-pointer ${
             isDark
-              ? "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
-              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+              ? "bg-indigo-600 hover:bg-indigo-700 border-indigo-500 text-white"
+              : "bg-indigo-600 hover:bg-indigo-700 border-indigo-600 text-white"
           }`}
         >
-          <Download size={15} />
-          <span>Download Transcript</span>
+          <Download size={15} className={downloading ? "animate-bounce" : ""} />
+          <span>{downloading ? "Generating PDF..." : "Download Official Transcript"}</span>
         </button>
       </div>
 
@@ -238,7 +264,13 @@ export const StudentResults: React.FC = () => {
               </span>
               <span className="text-sm font-bold text-emerald-900 flex items-center gap-1.5">
                 <CheckCircle2 size={15} className="text-emerald-600" />
-                Good Standing (Dean's List Eligible)
+                {studentMarks.length === 0
+                  ? "No Grades Recorded Yet"
+                  : Number(calculatedGpa) >= 3.5
+                  ? "Good Standing (Dean's List Eligible)"
+                  : Number(calculatedGpa) >= 2.0
+                  ? "Good Standing"
+                  : "Academic Warning"}
               </span>
             </div>
           </div>

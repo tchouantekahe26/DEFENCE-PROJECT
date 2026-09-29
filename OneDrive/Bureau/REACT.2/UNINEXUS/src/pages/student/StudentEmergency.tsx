@@ -38,7 +38,9 @@ export const StudentEmergency: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT COLUMN: BIG SOS DISPATCH HERO (Matching UI design) */}
-        <div className="bg-gradient-to-b from-blue-500 to-teal-700 rounded-4xl p-8 text-white shadow-xl flex flex-col justify-between text-center relative overflow-hidden">
+        <div className="bg-gradient-to-br from-[#4f46e5] via-[#4338ca] to-[#3730a3] rounded-4xl p-8 text-white shadow-xl flex flex-col justify-between text-center relative overflow-hidden">
+          <div className="absolute -top-24 -left-24 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-indigo-900/40 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10">
             <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner ring-4 ring-white/20">
               <ShieldAlert size={44} className="text-white" />
@@ -47,26 +49,26 @@ export const StudentEmergency: React.FC = () => {
             <h2 className="text-2xl font-extrabold text-white">
               Emergency Report
             </h2>
-            <p className="text-sm text-red-100 mt-2 max-w-xs mx-auto leading-relaxed">
+            <p className="text-sm text-indigo-100 mt-2 max-w-xs mx-auto leading-relaxed">
               In case of urgent emergency or threat to safety, send an instant alert to campus dispatch.
             </p>
 
             <button
               onClick={() => setModalOpen(true)}
-              className="mt-8 w-full py-4 px-6 bg-white hover:bg-red-50 text-red-700 font-extrabold text-base rounded-2xl shadow-xl shadow-red-900/30 transition transform hover:-translate-y-0.5 active:translate-y-0"
+              className="mt-8 w-full py-4 px-6 bg-white hover:bg-rose-50 text-rose-600 font-extrabold text-base rounded-2xl shadow-xl shadow-indigo-950/30 transition transform hover:-translate-y-0.5 active:translate-y-0"
             >
               Send Emergency Alert
             </button>
           </div>
 
           {/* Emergency Contacts Card */}
-          <div className="mt-8 pt-6 border-t border-white/20 text-left space-y-3 relative z-10 bg-black/10 p-5 rounded-2xl">
-            <p className="text-xs font-bold uppercase tracking-wider text-white-200">
+          <div className="mt-8 pt-6 border-t border-white/20 text-left space-y-3 relative z-10 bg-black/15 backdrop-blur-sm p-5 rounded-2xl">
+            <p className="text-xs font-bold uppercase tracking-wider text-indigo-200">
               Emergency Hotlines (24/7)
             </p>
             <div className="flex items-center justify-between text-sm">
               <span className="text-white font-medium flex items-center gap-2">
-                <Shield size={16} className="text-red-200" />
+                <Shield size={16} className="text-indigo-200" />
                 University Security
               </span>
               <a
@@ -78,7 +80,7 @@ export const StudentEmergency: React.FC = () => {
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-white font-medium flex items-center gap-2">
-                <Ambulance size={16} className="text-red-200" />
+                <Ambulance size={16} className="text-indigo-200" />
                 Health Center
               </span>
               <a

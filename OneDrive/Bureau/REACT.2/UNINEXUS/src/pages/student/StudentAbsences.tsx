@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
 import { Modal } from "../../components/common/Modal";
@@ -22,6 +23,7 @@ import {
 import type { AttendanceRecord, AbsenceJustification, JustificationStatus } from "../../types";
 
 export const StudentAbsences: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { attendanceRecords, justifications, submitJustification } = useData();
 
@@ -38,18 +40,27 @@ export const StudentAbsences: React.FC = () => {
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [successBanner, setSuccessBanner] = useState("");
+  const [submittedSuccessModalOpen, setSubmittedSuccessModalOpen] = useState(false);
 
-  const studentId = user?.id || "usr-student-1";
+  const studentId = user?.id || "";
+
+  const isMe = (item: { studentId?: string; matricNumber?: string; studentName?: string }) => {
+    if (!item) return false;
+    if (studentId && (item.studentId === studentId || String(item.studentId) === String(studentId))) return true;
+    if (user?.identifier && item.matricNumber && item.matricNumber.trim().toUpperCase() === user.identifier.trim().toUpperCase()) return true;
+    if (user?.name && item.studentName && item.studentName.trim().toUpperCase() === user.name.trim().toUpperCase()) return true;
+    return false;
+  };
 
   // Filter absences for this student
   const myAbsences = attendanceRecords.filter(
-    (a) => a.studentId === studentId && a.status === "Absent"
+    (a) => isMe(a) && a.status.toLowerCase() === "absent"
   );
 
   // Match absence to justification
   const getJustificationForAbsence = (absence: AttendanceRecord): AbsenceJustification | undefined => {
     return justifications.find(
-      (j) => (j.absenceId === absence.id || j.id === absence.justificationId) && j.studentId === studentId
+      (j) => (j.absenceId === absence.id || j.id === absence.justificationId) && isMe(j)
     );
   };
 
@@ -146,34 +157,42 @@ export const StudentAbsences: React.FC = () => {
     setFormError("");
 
     try {
-      // Simulate file reading / URL creation
-      const fakeDocUrl = URL.createObjectURL(file);
+      const readFileAsDataUrl = (f: File): Promise<string> =>
+        new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => resolve(URL.createObjectURL(f));
+          reader.readAsDataURL(f);
+        });
+
+      const docDataUrl = await readFileAsDataUrl(file);
 
       await submitJustification({
         absenceId: selectedAbsence.id,
-        studentId: user?.id || "usr-student-1",
-        studentName: user?.name || "Alex Johnson",
-        studentMatric: user?.identifier || "CS2025001",
+        studentId: user?.id || "",
+        studentName: user?.name || "Student",
+        studentMatric: user?.identifier || "STU-001",
         studentAvatar: user?.avatar,
         courseId: selectedAbsence.courseId,
         courseCode: selectedAbsence.courseCode,
         courseTitle: selectedAbsence.courseTitle || selectedAbsence.courseCode,
-        lecturerId: selectedAbsence.lecturerId || "usr-teacher-1",
-        lecturerName: selectedAbsence.lecturerName || "Dr. Robert Smith",
+        lecturerId: selectedAbsence.lecturerId || "usr-teacher-tchoutouo",
+        lecturerName: selectedAbsence.lecturerName || "Mrs. TCHOUTOUO",
         absenceDate: selectedAbsence.date,
         reason: reason.trim(),
         comment: comment.trim(),
-        documentUrl: fakeDocUrl,
+        documentUrl: docDataUrl,
         documentName: file.name,
         documentType: file.type || file.name.split(".").pop() || "application/pdf",
         documentSize: file.size,
       });
 
       setModalOpen(false);
+      setSubmittedSuccessModalOpen(true);
       setSuccessBanner(
         "Your absence justification has been submitted successfully and is awaiting review."
       );
-      setTimeout(() => setSuccessBanner(""), 7000);
+      setTimeout(() => setSuccessBanner(""), 9000);
     } catch (err: any) {
       setFormError(err.message || "Failed to submit absence justification.");
     } finally {
@@ -189,18 +208,35 @@ export const StudentAbsences: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Top Back Navigation Bar with (X) Button */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs shadow-2xs transition active:scale-95 group"
+          title="Return to previous page"
+        >
+          <div className="w-5 h-5 rounded-lg bg-slate-100 group-hover:bg-slate-200 flex items-center justify-center transition">
+            <X size={13} className="text-slate-600" />
+          </div>
+          <span>Back to Previous Page</span>
+        </button>
+      </div>
+
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#4f46e5] via-[#4338ca] to-[#3730a3] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute -top-24 -left-24 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-indigo-900/40 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-bold uppercase tracking-wider text-emerald-200 mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-xs font-bold uppercase tracking-wider text-indigo-200 mb-2">
               <FileCheck size={14} />
               Attendance & Absence Records
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Absence & Justifications
             </h1>
-            <p className="text-emerald-100 text-sm mt-1 max-w-xl">
+            <p className="text-indigo-100 text-sm mt-1 max-w-xl">
               Track your absence history, submit official supporting documentation (medical slips, certificates), and track reviewer status.
             </p>
           </div>
@@ -208,28 +244,47 @@ export const StudentAbsences: React.FC = () => {
           <div className="flex items-center gap-3">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 text-center border border-white/20">
               <p className="text-2xl font-black">{myAbsences.length}</p>
-              <p className="text-[11px] uppercase font-bold text-emerald-200">Total Absences</p>
+              <p className="text-[11px] uppercase font-bold text-indigo-200">Total Absences</p>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 text-center border border-white/20">
               <p className="text-2xl font-black">
                 {myAbsences.filter((a) => getJustificationForAbsence(a)?.status === "APPROVED").length}
               </p>
-              <p className="text-[11px] uppercase font-bold text-emerald-200">Excused</p>
+              <p className="text-[11px] uppercase font-bold text-indigo-200">Excused</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Success Notification Banner */}
+      {/* Success Notification Banner with (X) Back Button */}
       {successBanner && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center gap-3">
-            <CheckCircle2 size={20} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <p className="text-sm font-semibold">{successBanner}</p>
+            <CheckCircle2 size={22} className="text-emerald-600 shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-emerald-900">{successBanner}</p>
+              <p className="text-xs text-emerald-700">Click the (X) button to return to your previous page.</p>
+            </div>
           </div>
-          <button onClick={() => setSuccessBanner("")} className="text-emerald-600 hover:text-emerald-800">
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-2 self-end sm:self-center">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition active:scale-95"
+              title="Go back to previous page"
+            >
+              <X size={14} />
+              <span>Back to Previous Page</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSuccessBanner("")}
+              className="p-1.5 text-emerald-600 hover:text-emerald-900 rounded-lg transition"
+              title="Dismiss notification"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
       )}
 
@@ -296,7 +351,7 @@ export const StudentAbsences: React.FC = () => {
                       <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
                         <div className="flex items-center gap-1.5">
                           <User size={14} className="text-slate-400" />
-                          <span>{absence.lecturerName || "Dr. Robert Smith"}</span>
+                          <span>{absence.lecturerName || "Mrs. TCHOUTOUO"}</span>
                         </div>
                       </td>
 
@@ -393,7 +448,7 @@ export const StudentAbsences: React.FC = () => {
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-500 dark:text-slate-400 font-semibold">Lecturer:</span>
-                <span className="font-bold text-slate-900 dark:text-slate-100">{selectedAbsence.lecturerName || "Dr. Robert Smith"}</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{selectedAbsence.lecturerName || "Mrs. TCHOUTOUO"}</span>
               </div>
             </div>
 
@@ -616,6 +671,53 @@ export const StudentAbsences: React.FC = () => {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* ================= MODAL: SUBMISSION SUCCESS CONFIRMATION ================= */}
+      <Modal
+        isOpen={submittedSuccessModalOpen}
+        onClose={() => {
+          setSubmittedSuccessModalOpen(false);
+          navigate(-1);
+        }}
+        title="Justification Submitted"
+        subtitle="Your request has been forwarded to faculty and administration"
+        maxWidth="md"
+      >
+        <div className="text-center py-5 space-y-4">
+          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
+            <CheckCircle2 size={36} />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900">
+              Absence Justification Sent!
+            </h3>
+            <p className="text-xs text-slate-500 mt-1.5 max-w-sm mx-auto leading-relaxed">
+              Your official supporting document and explanation have been submitted for review. Click the <strong>(X)</strong> button in the top corner or below to return to your previous page.
+            </p>
+          </div>
+
+          <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                setSubmittedSuccessModalOpen(false);
+                navigate(-1);
+              }}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-xs shadow-md shadow-indigo-200 dark:shadow-none transition flex items-center justify-center gap-2 active:scale-95"
+            >
+              <X size={15} />
+              <span>(X) Go Back to Previous Page</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSubmittedSuccessModalOpen(false)}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs transition"
+            >
+              Stay on this page
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

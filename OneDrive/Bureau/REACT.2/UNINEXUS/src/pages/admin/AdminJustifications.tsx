@@ -109,10 +109,12 @@ export const AdminJustifications: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-indigo-700 via-indigo-800 to-purple-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#4f46e5] via-[#4338ca] to-[#3730a3] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute -top-24 -left-24 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-indigo-900/40 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-bold uppercase tracking-wider text-indigo-200 mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-xs font-bold uppercase tracking-wider text-indigo-200 mb-2">
               <ShieldCheck size={14} />
               Administrative Governance
             </div>
@@ -458,6 +460,49 @@ export const AdminJustifications: React.FC = () => {
                   <ExternalLink size={13} />
                   Open Document
                 </a>
+              </div>
+
+              {/* Embedded Document Preview */}
+              <div className="mt-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 p-3 overflow-hidden">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Official Document Inspection
+                  </span>
+                  <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                    {activeJustification.documentType || "PDF Document"}
+                  </span>
+                </div>
+
+                {activeJustification.documentUrl && (activeJustification.documentUrl.startsWith("data:image") || activeJustification.documentName?.match(/\.(jpg|jpeg|png|webp)$/i)) ? (
+                  <div className="max-h-72 overflow-auto rounded-xl bg-white dark:bg-slate-800 p-2 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                    <img
+                      src={activeJustification.documentUrl}
+                      alt="Medical Justification Proof"
+                      className="max-h-68 max-w-full object-contain rounded-lg shadow-xs"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-44 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center p-4 text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 flex items-center justify-center mb-2">
+                      <FileCheck size={24} />
+                    </div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      Medical Certificate / Justification Proof
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Verified institutional document uploaded by student
+                    </p>
+                    <a
+                      href={activeJustification.documentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition"
+                    >
+                      <ExternalLink size={12} />
+                      Inspect High-Resolution File
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
 

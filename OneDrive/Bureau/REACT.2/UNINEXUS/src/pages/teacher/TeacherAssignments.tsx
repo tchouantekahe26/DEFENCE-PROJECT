@@ -36,8 +36,8 @@ export const TeacherAssignments: React.FC = () => {
   const [dueDate, setDueDate] = useState("2025-06-15T23:59");
   const [maxScore, setMaxScore] = useState(100);
 
-  const teacherId = user?.id || "usr-teacher-1";
-  const teacherName = user?.name || "Dr. Robert Smith";
+  const teacherId = user?.id || "usr-teacher-tchoutouo";
+  const teacherName = user?.name || "Mrs. TCHOUTOUO";
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();

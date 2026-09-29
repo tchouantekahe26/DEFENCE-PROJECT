@@ -24,8 +24,8 @@ export const StudentAssignments: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [submittedNotice, setSubmittedNotice] = useState(false);
 
-  const studentId = user?.id || "usr-student-1";
-  const studentName = user?.name || "Alex Johnson";
+  const studentId = user?.id || "";
+  const studentName = user?.name || "Student";
 
   const getStudentSubmission = (asgId: string) => {
     return submissions.find(
@@ -45,6 +45,7 @@ export const StudentAssignments: React.FC = () => {
         studentName,
         content: submissionContent,
         status: "submitted",
+        submissionDate: new Date().toISOString().split("T")[0],
       });
       setSubmittedNotice(true);
       setTimeout(() => {

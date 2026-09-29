@@ -6,7 +6,7 @@ interface StatCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
-  color?: "indigo" | "emerald" | "sky" | "amber" | "rose" | "purple";
+  color?: "indigo" | "emerald" | "sky" | "amber" | "rose" | "purple" | "violet";
   subtitle?: string;
   badge?: string;
   trend?: {
@@ -30,52 +30,58 @@ export const StatCard: React.FC<StatCardProps> = ({
 
   const colorMap = {
     indigo: {
-      bg: isDark ? "bg-indigo-900/20" : "bg-indigo-50",
-      text: "text-indigo-600",
-      border: "border-indigo-100",
-      ring: "group-hover:ring-indigo-100",
+      bg: "bg-gradient-to-br from-[#4f46e5] to-[#4338ca] shadow-md shadow-indigo-500/25",
+      text: "text-white",
+      border: "border-indigo-100 dark:border-indigo-900/50",
+      hoverBorder: isDark ? "hover:border-indigo-500/50 hover:shadow-indigo-500/10" : "hover:border-indigo-300 hover:shadow-indigo-500/10",
     },
     emerald: {
-      bg: isDark ? "bg-emerald-900/20" : "bg-emerald-50",
-      text: "text-emerald-600",
-      border: "border-emerald-100",
-      ring: "group-hover:ring-emerald-100",
+      bg: isDark ? "bg-emerald-900/30" : "bg-emerald-50",
+      text: "text-emerald-500 dark:text-emerald-400",
+      border: "border-emerald-100 dark:border-emerald-900/50",
+      hoverBorder: isDark ? "hover:border-slate-700" : "hover:border-slate-300",
     },
     sky: {
-      bg: isDark ? "bg-sky-900/20" : "bg-sky-50",
-      text: "text-sky-600",
-      border: "border-sky-100",
-      ring: "group-hover:ring-sky-100",
+      bg: isDark ? "bg-sky-900/30" : "bg-sky-50",
+      text: "text-sky-500 dark:text-sky-400",
+      border: "border-sky-100 dark:border-sky-900/50",
+      hoverBorder: isDark ? "hover:border-slate-700" : "hover:border-slate-300",
     },
     amber: {
-      bg: isDark ? "bg-amber-900/20" : "bg-amber-50",
-      text: "text-amber-600",
-      border: "border-amber-100",
-      ring: "group-hover:ring-amber-100",
+      bg: isDark ? "bg-amber-900/30" : "bg-amber-50",
+      text: "text-amber-500 dark:text-amber-400",
+      border: "border-amber-100 dark:border-amber-900/50",
+      hoverBorder: isDark ? "hover:border-slate-700" : "hover:border-slate-300",
     },
     rose: {
-      bg: isDark ? "bg-rose-900/20" : "bg-rose-50",
-      text: "text-rose-600",
-      border: "border-rose-100",
-      ring: "group-hover:ring-rose-100",
+      bg: isDark ? "bg-rose-900/30" : "bg-rose-50",
+      text: "text-rose-500 dark:text-rose-400",
+      border: "border-rose-100 dark:border-rose-900/50",
+      hoverBorder: isDark ? "hover:border-slate-700" : "hover:border-slate-300",
     },
     purple: {
-      bg: isDark ? "bg-purple-900/20" : "bg-purple-50",
-      text: "text-purple-600",
-      border: "border-purple-100",
-      ring: "group-hover:ring-purple-100",
+      bg: "bg-gradient-to-br from-indigo-600 to-purple-600 shadow-md shadow-purple-500/25",
+      text: "text-white",
+      border: "border-purple-100 dark:border-purple-900/50",
+      hoverBorder: isDark ? "hover:border-purple-500/50 hover:shadow-purple-500/10" : "hover:border-purple-300 hover:shadow-purple-500/10",
+    },
+    violet: {
+      bg: "bg-gradient-to-br from-[#4f46e5] via-[#4338ca] to-[#3730a3] shadow-md shadow-indigo-500/25",
+      text: "text-white",
+      border: "border-purple-100 dark:border-purple-900/50",
+      hoverBorder: isDark ? "hover:border-indigo-500/50 hover:shadow-indigo-500/10" : "hover:border-indigo-300 hover:shadow-indigo-500/10",
     },
   };
 
-  const scheme = colorMap[color];
+  const scheme = colorMap[color] || colorMap.indigo;
 
   return (
     <div
       onClick={onClick}
       className={`group rounded-2xl p-5 border shadow-xs hover:shadow-md transition-all duration-200 ${
         isDark
-          ? "bg-slate-800 border-slate-700"
-          : "bg-white border-slate-200/80"
+          ? `bg-slate-900 border-slate-800 ${scheme.hoverBorder}`
+          : `bg-white border-slate-200/80 ${scheme.hoverBorder}`
       } ${
         onClick ? "cursor-pointer" : ""
       }`}

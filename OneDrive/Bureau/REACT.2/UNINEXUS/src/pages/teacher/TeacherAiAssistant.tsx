@@ -28,8 +28,8 @@ export const TeacherAiAssistant: React.FC = () => {
     {
       sender: "ai",
       text: `Hello ${
-        user?.name || "Dr. Robert Smith"
-      }! 👨‍🏫 I am your UniNexus Faculty & Teaching AI Assistant. I can assist with generating quiz questions, structuring lesson plans, analyzing class attendance trends, and checking university grading standards.`,
+        user?.name || "Mrs. TCHOUTOUO"
+      }! 👨‍🏫 I am your UNISPHERE Faculty & Teaching AI Assistant. I can assist with generating quiz questions, structuring lesson plans, analyzing class attendance trends, and checking university grading standards.`,
       timestamp: "Just now",
     },
   ]);
@@ -214,14 +214,14 @@ export const TeacherAiAssistant: React.FC = () => {
 
         {/* Right Sidebar */}
         <div className="space-y-6">
-          <div className="bg-gradient-to-br from-sky-50 to-indigo-50 rounded-3xl p-6 border border-sky-200/60">
-            <div className="w-10 h-10 rounded-2xl bg-sky-600 text-white flex items-center justify-center mb-3">
+          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-6 border border-indigo-200/60">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center mb-3 shadow-sm">
               <Sparkles size={20} />
             </div>
-            <h4 className="text-sm font-bold text-sky-950">
+            <h4 className="text-sm font-bold text-indigo-950">
               Exam & Syllabus Builder
             </h4>
-            <p className="text-xs text-sky-800 mt-1 leading-relaxed">
+            <p className="text-xs text-indigo-800 mt-1 leading-relaxed">
               Generate multiple-choice items, code challenge prompts, and grading rubrics
               aligned with Bloom's Taxonomy.
             </p>

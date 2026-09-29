@@ -3,28 +3,31 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
 import { useTheme } from "../../context/ThemeContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { NotificationDropdown } from "../common/NotificationDropdown";
-import { EmergencyModal } from "../common/EmergencyModal";
+import { getUserAvatar } from "../../utils/avatar";
 import {
   LayoutDashboard,
   Users,
   Calendar,
   CalendarCheck,
+  CalendarClock,
   Award,
   Megaphone,
-  ShieldAlert,
   Settings,
   LogOut,
-  MessageSquare,
   FileCheck,
   GraduationCap,
   Bell,
   Search,
   Menu,
   X,
+  ArrowRight,
+  ShieldAlert,
   Sun,
   Moon,
-  ArrowRight,
+  Globe,
+  Check,
 } from "lucide-react";
 
 interface AppLayoutProps {
@@ -35,21 +38,33 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { user, role, logout } = useAuth();
   const {
     notifications,
-    emergencyReports,
     justifications,
     courses,
     users,
     timetableSlots,
     marks,
     announcements,
+    emergencyReports,
   } = useData();
-  const { theme, isDark, toggleTheme } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
-  const [emergencyModalOpen, setEmergencyModalOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const langMenuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setLangMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,10 +74,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     (n) =>
       (!n.targetRole || n.targetRole === "all" || n.targetRole === role) &&
       !n.isRead
-  ).length;
-
-  const activeEmergencies = emergencyReports.filter(
-    (e) => e.status === "Reported" || e.status === "Dispatched"
   ).length;
 
   // Pending justifications badge count
@@ -81,89 +92,85 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     return 0;
   }, [justifications, role, user]);
 
-  // Define Navigation Items strictly adhering to Requirements #1, #13, #14
+  const activeEmergencies = useMemo(() => {
+    return (emergencyReports || []).filter(
+      (r) => r.status === "Reported" || r.status === "Dispatched"
+    );
+  }, [emergencyReports]);
+
+  // Define Navigation Items strictly adhering to Requirements
   const getNavItems = () => {
     switch (role) {
       case "admin":
         return [
-          { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
-          { label: "User Management", path: "/admin/users", icon: Users },
-          { label: "Timetable Management", path: "/admin/timetable", icon: Calendar },
-          { label: "Results Management", path: "/admin/results", icon: Award },
+          { label: t("nav.dashboard", "Dashboard"), path: "/admin/dashboard", icon: LayoutDashboard },
+          { label: t("nav.user_management", "User Management"), path: "/admin/users", icon: Users },
+          { label: t("nav.timetable_management", "Timetable Management"), path: "/admin/timetable", icon: Calendar },
           {
-            label: "Absence Justifications",
+            label: t("nav.absence_justifications", "Absence Justifications"),
             path: "/admin/absences",
             icon: FileCheck,
             badge: pendingJustificationsCount > 0 ? String(pendingJustificationsCount) : undefined,
           },
-          { label: "Announcements", path: "/admin/announcements", icon: Megaphone },
-          {
-            label: "Emergency Reports",
-            path: "/admin/emergency",
-            icon: ShieldAlert,
-            badge: activeEmergencies > 0 ? String(activeEmergencies) : undefined,
-          },
-          { label: "Settings", path: "/admin/settings", icon: Settings },
+          { label: t("nav.announcements", "Announcements"), path: "/admin/announcements", icon: Megaphone },
+          { label: t("nav.settings", "Settings"), path: "/admin/settings", icon: Settings },
         ];
 
       case "teacher":
         return [
-          { label: "Dashboard", path: "/teacher/dashboard", icon: LayoutDashboard },
-          { label: "Attendance", path: "/teacher/attendance", icon: CalendarCheck },
+          { label: t("nav.dashboard", "Dashboard"), path: "/teacher/dashboard", icon: LayoutDashboard },
+          { label: t("nav.class_timetable", "Class Timetable"), path: "/teacher/timetable", icon: Calendar },
+          { label: t("nav.submit_availability", "Submit Availability"), path: "/teacher/availability", icon: CalendarClock },
+          { label: t("nav.attendance", "Attendance"), path: "/teacher/attendance", icon: CalendarCheck },
           {
-            label: "Absence Justifications",
+            label: t("nav.absence_justifications", "Absence Justifications"),
             path: "/teacher/absences",
             icon: FileCheck,
             badge: pendingJustificationsCount > 0 ? String(pendingJustificationsCount) : undefined,
           },
-          { label: "Marks Management", path: "/teacher/marks", icon: Award },
-          { label: "Students", path: "/teacher/students", icon: Users },
-          { label: "Announcements", path: "/teacher/announcements", icon: Megaphone },
-          { label: "Settings", path: "/teacher/settings", icon: Settings },
+          { label: t("nav.marks_management", "Marks Management"), path: "/teacher/marks", icon: Award },
+          { label: t("nav.settings", "Settings"), path: "/teacher/settings", icon: Settings },
         ];
 
       case "student":
       default:
         return [
-          { label: "Dashboard", path: "/student/dashboard", icon: LayoutDashboard },
-          { label: "My Timetable", path: "/student/timetable", icon: Calendar },
-          { label: "Absences & Justifications", path: "/student/absences", icon: FileCheck },
-          { label: "My Marks", path: "/student/results", icon: Award },
-          { label: "Announcements", path: "/student/announcements", icon: Megaphone },
-          { label: "Community Chat", path: "/student/chat", icon: MessageSquare },
-          { label: "Emergency Report", path: "/student/emergency", icon: ShieldAlert },
-          { label: "Settings", path: "/student/settings", icon: Settings },
+          { label: t("nav.dashboard", "Dashboard"), path: "/student/dashboard", icon: LayoutDashboard },
+          { label: t("nav.my_timetable", "My Timetable"), path: "/student/timetable", icon: Calendar },
+          { label: t("nav.my_attendance", "My Attendance"), path: "/student/attendance", icon: CalendarCheck },
+          { label: t("nav.my_marks", "My Marks"), path: "/student/results", icon: Award },
+          { label: t("nav.settings", "Settings"), path: "/student/settings", icon: Settings },
         ];
     }
   };
 
   const navItems = getNavItems();
 
-  // Role-specific theme colors
+  // Role-specific theme colors - unified to rich purple / indigo matching login & registration
   const themeConfig = {
     admin: {
-      sidebarBg: isDark ? "bg-slate-950 border-r border-slate-800" : "bg-[#4338ca]",
-      activeBg: isDark ? "bg-indigo-600/30 text-indigo-200 font-semibold border-l-4 border-indigo-400" : "bg-white/20 text-white font-semibold",
-      hoverBg: isDark ? "hover:bg-slate-900 text-slate-400 hover:text-slate-200" : "hover:bg-white/10 text-indigo-100 hover:text-white",
+      sidebarBg: isDark ? "bg-gradient-to-b from-[#1e1b4b] via-[#0f172a] to-[#1e1b4b] border-r border-indigo-950/80" : "bg-gradient-to-b from-[#4f46e5] via-[#4338ca] to-[#3730a3]",
+      activeBg: isDark ? "bg-gradient-to-r from-indigo-600/40 to-purple-600/30 text-white font-semibold border-l-4 border-indigo-400 shadow-xs" : "bg-white/20 text-white font-semibold shadow-xs",
+      hoverBg: isDark ? "hover:bg-indigo-950/60 text-indigo-200/70 hover:text-white" : "hover:bg-white/10 text-indigo-100 hover:text-white",
       badgeColor: "bg-indigo-900/60 text-indigo-100",
       accent: "text-indigo-600",
-      title: "ADMINISTRATOR",
+      title: t("role.admin", "ADMINISTRATOR"),
     },
     teacher: {
-      sidebarBg: isDark ? "bg-slate-950 border-r border-slate-800" : "bg-[#0284c7]",
-      activeBg: isDark ? "bg-sky-600/30 text-sky-200 font-semibold border-l-4 border-sky-400" : "bg-white/20 text-white font-semibold",
-      hoverBg: isDark ? "hover:bg-slate-900 text-slate-400 hover:text-slate-200" : "hover:bg-white/10 text-sky-100 hover:text-white",
-      badgeColor: "bg-sky-900/60 text-sky-100",
-      accent: "text-sky-600",
-      title: "TEACHER",
+      sidebarBg: isDark ? "bg-gradient-to-b from-[#1e1b4b] via-[#0f172a] to-[#1e1b4b] border-r border-indigo-950/80" : "bg-gradient-to-b from-[#4f46e5] via-[#4338ca] to-[#3730a3]",
+      activeBg: isDark ? "bg-gradient-to-r from-indigo-600/40 to-purple-600/30 text-white font-semibold border-l-4 border-indigo-400 shadow-xs" : "bg-white/20 text-white font-semibold shadow-xs",
+      hoverBg: isDark ? "hover:bg-indigo-950/60 text-indigo-200/70 hover:text-white" : "hover:bg-white/10 text-indigo-100 hover:text-white",
+      badgeColor: "bg-indigo-900/60 text-indigo-100",
+      accent: "text-indigo-600",
+      title: t("role.teacher", "FACULTY"),
     },
     student: {
-      sidebarBg: isDark ? "bg-slate-950 border-r border-slate-800" : "bg-[#059669]",
-      activeBg: isDark ? "bg-emerald-600/30 text-emerald-200 font-semibold border-l-4 border-emerald-400" : "bg-white/20 text-white font-semibold",
-      hoverBg: isDark ? "hover:bg-slate-900 text-slate-400 hover:text-slate-200" : "hover:bg-white/10 text-emerald-100 hover:text-white",
-      badgeColor: "bg-emerald-900/60 text-emerald-100",
-      accent: "text-emerald-600",
-      title: "STUDENT",
+      sidebarBg: isDark ? "bg-gradient-to-b from-[#1e1b4b] via-[#0f172a] to-[#1e1b4b] border-r border-indigo-950/80" : "bg-gradient-to-b from-[#4f46e5] via-[#4338ca] to-[#3730a3]",
+      activeBg: isDark ? "bg-gradient-to-r from-indigo-600/40 to-purple-600/30 text-white font-semibold border-l-4 border-indigo-400 shadow-xs" : "bg-white/20 text-white font-semibold shadow-xs",
+      hoverBg: isDark ? "hover:bg-indigo-950/60 text-indigo-200/70 hover:text-white" : "hover:bg-white/10 text-indigo-100 hover:text-white",
+      badgeColor: "bg-indigo-900/60 text-indigo-100",
+      accent: "text-indigo-600",
+      title: t("role.student", "STUDENT"),
     },
   }[role];
 
@@ -176,11 +183,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     if (role === "student") {
       // Search timetable
       timetableSlots
-        .filter((t) => t.courseTitle.toLowerCase().includes(q) || t.courseCode.toLowerCase().includes(q))
+        .filter((t) => t.courseTitle.toLowerCase().includes(q) || (t.courseCode && t.courseCode.toLowerCase().includes(q)))
         .slice(0, 3)
         .forEach((t) => {
           results.push({
-            title: `${t.courseCode} - ${t.courseTitle}`,
+            title: t.courseCode ? `${t.courseCode} - ${t.courseTitle}` : t.courseTitle,
             subtitle: `${t.day} at ${t.startTime} in ${t.classroom}`,
             category: "Timetable",
             url: "/student/timetable",
@@ -202,7 +209,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       // Search announcements
       announcements
-        .filter((a) => a.title.toLowerCase().includes(q) || a.description.toLowerCase().includes(q))
+        .filter((a) => a.title.toLowerCase().includes(q) || (a.description || a.content || "").toLowerCase().includes(q))
         .slice(0, 2)
         .forEach((a) => {
           results.push({
@@ -300,8 +307,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <GraduationCap size={24} />
             </div>
             <div>
-              <span className="font-bold text-lg tracking-tight block">
-                UniNexus
+              <span className="font-black text-lg tracking-tight block">
+                UNISPHERE
               </span>
               <span className="text-[10px] uppercase font-bold tracking-widest text-white/70 block">
                 {themeConfig.title}
@@ -312,10 +319,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {/* User badge */}
           <div className={`mt-4 p-2.5 rounded-xl ${isDark ? "bg-slate-900/80 border border-slate-800" : "bg-black/15"} flex items-center gap-3`}>
             <img
-              src={
-                user?.avatar ||
-                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-              }
+              src={getUserAvatar(user, role)}
               alt={user?.name}
               className="w-8 h-8 rounded-lg object-cover ring-1 ring-white/30 shrink-0"
             />
@@ -370,7 +374,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-red-200 hover:text-white hover:bg-red-500/30 transition font-medium"
           >
             <LogOut size={18} />
-            <span>Sign Out</span>
+            <span>{t("nav.sign_out", "Sign Out")}</span>
           </button>
         </div>
       </aside>
@@ -390,7 +394,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-white">
                   <GraduationCap size={22} />
                 </div>
-                <span className="font-bold text-lg">UniNexus</span>
+                <span className="font-black text-lg">UNISPHERE</span>
               </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}
@@ -436,7 +440,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-200 hover:text-white"
               >
                 <LogOut size={16} />
-                <span>Sign Out</span>
+                <span>{t("nav.sign_out", "Sign Out")}</span>
               </button>
             </div>
           </div>
@@ -456,7 +460,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <Menu size={20} />
             </button>
             <div className={`hidden sm:flex items-center gap-2 text-xs font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-              <span className="capitalize">{role} Portal</span>
+              <span className="capitalize">{t(`portal.${role}`, `${role} Portal`)}</span>
               <span>/</span>
               <span className={`font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                 {navItems.find((i) => location.pathname.startsWith(i.path))
@@ -480,7 +484,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   setSearchOpen(true);
                 }}
                 onFocus={() => setSearchOpen(true)}
-                placeholder={`Search ${role === "student" ? "timetable, marks, announcements..." : role === "teacher" ? "students, absences, courses..." : "users, absences, records..."}`}
+                placeholder={
+                  role === "student"
+                    ? t("header.search_student", "Search timetable, marks, announcements...")
+                    : role === "teacher"
+                    ? t("header.search_teacher", "Search students, absences, courses...")
+                    : t("header.search_admin", "Search users, absences, records...")
+                }
                 className={`w-full pl-9 pr-4 py-2 ${
                   isDark
                     ? "bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500 focus:bg-slate-900 focus:border-indigo-500"
@@ -550,31 +560,106 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             )}
           </div>
 
-          {/* Right: Action Buttons & Theme Toggle */}
+          {/* Right: Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Dark / Light Theme Toggle */}
+            {/* SOS Incident Active Badge */}
+            {activeEmergencies.length > 0 && (
+              <Link
+                to={role === "admin" ? "/admin/emergency" : "/student/emergency"}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-md shadow-red-500/20 transition animate-pulse"
+                title={`${activeEmergencies.length} Active Emergency Incident(s)`}
+              >
+                <ShieldAlert size={15} />
+                <span className="hidden sm:inline">{t("header.sos_active", "SOS Active")} ({activeEmergencies.length})</span>
+              </Link>
+            )}
+
+            {/* 1. Language Selector Button & Dropdown */}
+            <div className="relative" ref={langMenuRef}>
+              <button
+                type="button"
+                onClick={() => setLangMenuOpen(!langMenuOpen)}
+                className={`h-9 px-2.5 rounded-xl border flex items-center gap-1.5 transition text-xs font-bold ${
+                  isDark
+                    ? "border-slate-800 bg-slate-800/90 text-slate-200 hover:bg-slate-700 hover:border-slate-700"
+                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                } shadow-2xs`}
+                title={language === "en" ? t("header.language_to_fr", "Switch to French (FR)") : t("header.language_to_en", "Switch to English (EN)")}
+                aria-label={language === "en" ? "Switch to French" : "Switch to English"}
+              >
+                <Globe size={15} className="text-indigo-500 shrink-0" />
+                <span className="uppercase tracking-wider">{language === "en" ? "EN" : "FR"}</span>
+                <span className="text-[13px]">{language === "en" ? "🇬🇧" : "🇫🇷"}</span>
+              </button>
+
+              {langMenuOpen && (
+                <div
+                  className={`absolute right-0 mt-2 w-44 rounded-2xl border p-1.5 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 ${
+                    isDark ? "bg-slate-900 border-slate-800 text-slate-100" : "bg-white border-slate-200 text-slate-800"
+                  }`}
+                >
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    {t("header.language", "Language")}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLanguage("en");
+                      setLangMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition ${
+                      language === "en"
+                        ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold"
+                        : "hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="text-base">🇬🇧</span>
+                      <span>English</span>
+                    </span>
+                    {language === "en" && <Check size={14} className="text-indigo-600 dark:text-indigo-400" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLanguage("fr");
+                      setLangMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition ${
+                      language === "fr"
+                        ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold"
+                        : "hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="text-base">🇫🇷</span>
+                      <span>Français</span>
+                    </span>
+                    {language === "fr" && <Check size={14} className="text-indigo-600 dark:text-indigo-400" />}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 2. Theme Toggle Button */}
             <button
+              type="button"
               onClick={toggleTheme}
               className={`w-9 h-9 rounded-xl border flex items-center justify-center transition ${
                 isDark
-                  ? "border-slate-700 bg-slate-800 text-amber-400 hover:bg-slate-700"
-                  : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  ? "border-slate-800 bg-slate-800 text-amber-400 hover:bg-slate-700 hover:text-amber-300 shadow-2xs"
+                  : "border-slate-200 bg-white text-indigo-600 hover:bg-slate-50 hover:text-indigo-700 shadow-2xs"
               }`}
-              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              title={isDark ? t("header.theme_to_light", "Switch to Light Mode") : t("header.theme_to_dark", "Switch to Dark Mode")}
+              aria-label={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
-              {isDark ? <Sun size={17} /> : <Moon size={17} />}
+              {isDark ? (
+                <Sun size={18} className="transition-transform hover:rotate-45" />
+              ) : (
+                <Moon size={18} className="transition-transform hover:-rotate-12" />
+              )}
             </button>
-
-            {role !== "teacher" && (
-              <button
-                onClick={() => setEmergencyModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 text-xs font-bold transition border border-red-200 dark:border-red-800/50"
-                title="Send Emergency Alert"
-              >
-                <ShieldAlert size={16} />
-                <span className="hidden sm:inline">Emergency</span>
-              </button>
-            )}
 
             {/* Notification Bell */}
             <div className="relative">
@@ -585,6 +670,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     ? "border-slate-800 bg-slate-800 text-slate-300 hover:bg-slate-700"
                     : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                 }`}
+                title={t("header.notifications", "Notifications")}
               >
                 <Bell size={18} />
                 {unreadNotifications > 0 && (
@@ -605,13 +691,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             <Link
               to={`/${role}/settings`}
               className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800 group"
-              title="View Profile & Settings"
+              title={t("header.profile_settings", "View Profile & Settings")}
             >
               <img
-                src={
-                  user?.avatar ||
-                  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-                }
+                src={getUserAvatar(user, role)}
                 alt={user?.name}
                 className="w-8 h-8 rounded-lg object-cover ring-2 ring-transparent group-hover:ring-indigo-500 transition"
               />
@@ -620,16 +703,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </header>
 
         {/* Main Content Area */}
-        <main className={`flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8 ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"} transition-colors duration-200`}>
+        <main className={`flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"} transition-colors duration-200`}>
           {children}
         </main>
       </div>
-
-      {/* Emergency Modal */}
-      <EmergencyModal
-        isOpen={emergencyModalOpen}
-        onClose={() => setEmergencyModalOpen(false)}
-      />
     </div>
   );
 };

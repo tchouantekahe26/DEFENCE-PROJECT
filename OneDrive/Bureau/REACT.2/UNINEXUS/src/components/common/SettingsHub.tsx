@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { PasswordField } from "./PasswordField";
 import {
   Bell,
@@ -23,16 +25,10 @@ interface SettingsHubProps {
 
 type Section = "account" | "chat" | "privacy" | "notifications" | "language";
 
-const sectionItems: Array<{ id: Section; title: string; subtitle: string; icon: React.ElementType; tone: string }> = [
-  { id: "account", title: "Account", subtitle: "Profile picture, name, email and bio", icon: UserCircle, tone: "bg-sky-500" },
-  { id: "chat", title: "Chat Settings", subtitle: "Wallpaper, night mode, animations", icon: MessageCircle, tone: "bg-orange-500" },
-  { id: "privacy", title: "Privacy & Security", subtitle: "Password and account protection", icon: KeyRound, tone: "bg-emerald-500" },
-  { id: "notifications", title: "Notifications", subtitle: "Alerts, sounds and badges", icon: Bell, tone: "bg-rose-500" },
-  { id: "language", title: "Language", subtitle: "English", icon: Globe, tone: "bg-violet-500" },
-];
-
 export const SettingsHub: React.FC<SettingsHubProps> = ({ accent, actorLabel }) => {
   const { user, updateProfile, changePassword } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const [section, setSection] = useState<Section | null>(null);
   const [name, setName] = useState(user?.name || "");
@@ -40,8 +36,6 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({ accent, actorLabel }) 
   const [bio, setBio] = useState(user?.department || "");
   const [avatar, setAvatar] = useState(user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80");
   const [saved, setSaved] = useState(false);
-  const [language, setLanguage] = useState("English");
-  const [nightMode, setNightMode] = useState(true);
   const [animations, setAnimations] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [sounds, setSounds] = useState(true);
@@ -56,6 +50,14 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({ accent, actorLabel }) 
     sky: "bg-sky-600 hover:bg-sky-700",
     indigo: "bg-indigo-600 hover:bg-indigo-700",
   }[accent];
+
+  const sectionItems: Array<{ id: Section; title: string; subtitle: string; icon: React.ElementType; tone: string }> = [
+    { id: "account", title: language === "fr" ? "Compte" : "Account", subtitle: language === "fr" ? "Photo de profil, nom, email et biographie" : "Profile picture, name, email and bio", icon: UserCircle, tone: "bg-sky-500" },
+    { id: "chat", title: language === "fr" ? "Paramètres d'Affichage & Chat" : "Chat & Theme Settings", subtitle: language === "fr" ? "Arrière-plan, mode sombre, animations" : "Wallpaper, night mode, animations", icon: MessageCircle, tone: "bg-orange-500" },
+    { id: "privacy", title: language === "fr" ? "Confidentialité & Sécurité" : "Privacy & Security", subtitle: language === "fr" ? "Mot de passe et protection du compte" : "Password and account protection", icon: KeyRound, tone: "bg-emerald-500" },
+    { id: "notifications", title: language === "fr" ? "Notifications" : "Notifications", subtitle: language === "fr" ? "Alertes, sons et badges" : "Alerts, sounds and badges", icon: Bell, tone: "bg-rose-500" },
+    { id: "language", title: language === "fr" ? "Langue" : "Language", subtitle: language === "fr" ? "Français (FR)" : "English (EN)", icon: Globe, tone: "bg-violet-500" },
+  ];
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -145,9 +147,42 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({ accent, actorLabel }) 
               <div className="flex items-center justify-end gap-3">{saved && <span className="flex items-center gap-1 text-sm font-semibold text-emerald-600"><Check size={16} /> Saved</span>}<button className={`flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white ${accentClasses}`}><Save size={16} />Save changes</button></div>
             </form>
           )}
-          {section === "chat" && <PreferencePanel title="Chat Settings" rows={[["Wallpaper", "Use the portal background", true, () => {}], ["Night Mode", "Keep chat comfortable in low light", nightMode, () => setNightMode(!nightMode)], ["Animations", "Play interface animations", animations, () => setAnimations(!animations)]]} />}
-          {section === "notifications" && <PreferencePanel title="Notifications" rows={[["Notifications", "Receive academic and portal alerts", notifications, () => setNotifications(!notifications)], ["Sounds", "Play notification sounds", sounds, () => setSounds(!sounds)], ["Badges", "Show unread counts on navigation", badges, () => setBadges(!badges)]]} />}
-          {section === "language" && <div className="space-y-5"><h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Language</h2><label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">App language<select value={language} onChange={(event) => setLanguage(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"><option>English</option><option>French</option></select></label></div>}
+          {section === "chat" && (
+            <PreferencePanel
+              title={language === "fr" ? "Affichage & Mode Sombre" : "Display & Theme Settings"}
+              rows={[
+                [language === "fr" ? "Fond d'écran" : "Wallpaper", language === "fr" ? "Utiliser l'arrière-plan du portail" : "Use the portal background", true, () => {}],
+                [language === "fr" ? "Mode Sombre / Nuit" : "Dark / Night Mode", language === "fr" ? "Activer le thème sombre" : "Keep interface comfortable in low light", isDark, toggleTheme],
+                [language === "fr" ? "Animations" : "Animations", language === "fr" ? "Activer les animations de l'interface" : "Play interface animations", animations, () => setAnimations(!animations)],
+              ]}
+            />
+          )}
+          {section === "notifications" && (
+            <PreferencePanel
+              title={language === "fr" ? "Notifications" : "Notifications"}
+              rows={[
+                [language === "fr" ? "Notifications" : "Notifications", language === "fr" ? "Recevoir les alertes académiques" : "Receive academic and portal alerts", notifications, () => setNotifications(!notifications)],
+                [language === "fr" ? "Sons" : "Sounds", language === "fr" ? "Émettre un son de notification" : "Play notification sounds", sounds, () => setSounds(!sounds)],
+                [language === "fr" ? "Badges" : "Badges", language === "fr" ? "Afficher les compteurs sur le menu" : "Show unread counts on navigation", badges, () => setBadges(!badges)],
+              ]}
+            />
+          )}
+          {section === "language" && (
+            <div className="space-y-5">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{language === "fr" ? "Langue de l'application" : "Language"}</h2>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                {language === "fr" ? "Choisir la langue" : "App language"}
+                <select
+                  value={language}
+                  onChange={(event) => setLanguage(event.target.value as "en" | "fr")}
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 font-medium"
+                >
+                  <option value="en">🇬🇧 English (English)</option>
+                  <option value="fr">🇫🇷 Français (French)</option>
+                </select>
+              </label>
+            </div>
+          )}
           {section === "privacy" && <form onSubmit={savePassword} className="space-y-5"><h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Privacy & Security</h2><div className="flex items-center gap-3 rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200"><ShieldCheck size={20} /> Your account security settings</div><PasswordField label="Current password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" /><PasswordField label="New password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" /><PasswordField label="Confirm new password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" />{securityMessage && <p className="text-sm font-semibold text-emerald-600">{securityMessage}</p>}<button className={`rounded-xl px-5 py-3 text-sm font-bold text-white ${accentClasses}`}><LockKeyhole size={16} className="mr-2 inline" />Update password</button></form>}
         </div>
       )}

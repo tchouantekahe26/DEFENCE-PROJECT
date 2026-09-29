@@ -12,12 +12,21 @@ import {
   Plus,
 } from "lucide-react";
 import type { User } from "../../types";
+import { DEFAULT_AVATARS } from "../../utils/avatar";
 
 export const AdminTeachers: React.FC = () => {
-  const { users, courses } = useData();
+  const { users, courses, addUser } = useData();
 
   const [search, setSearch] = useState("");
   const [selectedTeacher, setSelectedTeacher] = useState<User | null>(null);
+
+  // Add Faculty Member state
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newIdentifier, setNewIdentifier] = useState("");
+  const [newDepartment, setNewDepartment] = useState("Computer Science");
+  const [newPhone, setNewPhone] = useState("");
 
   const teachers = users.filter((u) => u.role === "teacher");
 
@@ -31,6 +40,28 @@ export const AdminTeachers: React.FC = () => {
     );
   });
 
+  const handleCreateTeacher = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim() || !newEmail.trim() || !newIdentifier.trim()) return;
+
+    addUser({
+      name: newName.trim(),
+      email: newEmail.trim(),
+      role: "teacher",
+      identifier: newIdentifier.trim(),
+      department: newDepartment,
+      phone: newPhone.trim() || "+237 670-000-000",
+      status: "active",
+      avatar: DEFAULT_AVATARS.teacher,
+    });
+
+    setNewName("");
+    setNewEmail("");
+    setNewIdentifier("");
+    setNewPhone("");
+    setShowAddModal(false);
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Header */}
@@ -43,6 +74,16 @@ export const AdminTeachers: React.FC = () => {
             Manage academic staff, course allocations, departmental appointments and workload
           </p>
         </div>
+        <button
+          onClick={() => {
+            setNewIdentifier(`TCH-${Math.floor(100 + Math.random() * 900)}`);
+            setShowAddModal(true);
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-xs shadow-md shadow-indigo-200 transition"
+        >
+          <Plus size={16} />
+          <span>Add Faculty Member</span>
+        </button>
       </div>
 
       {/* Directory Table */}
@@ -90,8 +131,7 @@ export const AdminTeachers: React.FC = () => {
                     <td className="py-4 font-bold text-slate-900 flex items-center gap-3">
                       <img
                         src={
-                          tch.avatar ||
-                          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
+                          tch.avatar || DEFAULT_AVATARS.teacher
                         }
                         alt={tch.name}
                         className="w-8 h-8 rounded-xl object-cover ring-1 ring-slate-200"
@@ -179,6 +219,111 @@ export const AdminTeachers: React.FC = () => {
               </button>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* Add Faculty Member Modal */}
+      {showAddModal && (
+        <Modal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          title="Add New Faculty Member"
+          subtitle="Provision a teacher account with access to timetable, attendance, marks and courses"
+          maxWidth="lg"
+        >
+          <form onSubmit={handleCreateTeacher} className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="e.g. Dr. Frank Kamga"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 outline-none focus:border-indigo-600 focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="e.g. fkamga@uninexus.edu"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 outline-none focus:border-indigo-600 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">
+                  Staff ID / Identifier <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newIdentifier}
+                  onChange={(e) => setNewIdentifier(e.target.value)}
+                  placeholder="e.g. TCH-301"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 outline-none focus:border-indigo-600 focus:bg-white font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">
+                  Department
+                </label>
+                <input
+                  type="text"
+                  value={newDepartment}
+                  onChange={(e) => setNewDepartment(e.target.value)}
+                  placeholder="Computer Science"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 outline-none focus:border-indigo-600 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-slate-700 font-bold mb-1">
+                Phone Number
+              </label>
+              <input
+                type="text"
+                value={newPhone}
+                onChange={(e) => setNewPhone(e.target.value)}
+                placeholder="+237 670-000-000"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 outline-none focus:border-indigo-600 focus:bg-white"
+              />
+            </div>
+
+            <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-900 text-[11px] leading-relaxed">
+              <strong>Admin Provisioning:</strong> The teacher will be added to the institutional directory immediately and can be assigned courses and timetable slots.
+            </div>
+
+            <div className="pt-3 flex justify-end gap-2.5 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 font-semibold text-slate-600 hover:bg-slate-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold shadow-sm hover:from-indigo-700 hover:to-purple-700 transition"
+              >
+                Create Faculty Account
+              </button>
+            </div>
+          </form>
         </Modal>
       )}
     </div>

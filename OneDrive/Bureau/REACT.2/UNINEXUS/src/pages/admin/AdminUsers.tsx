@@ -15,6 +15,7 @@ import {
   Filter,
 } from "lucide-react";
 import type { User, UserRole } from "../../types";
+import { DEFAULT_AVATARS } from "../../utils/avatar";
 
 export const AdminUsers: React.FC = () => {
   const { users, addUser, updateUser, deleteUser } = useData();
@@ -39,10 +40,10 @@ export const AdminUsers: React.FC = () => {
     setName("");
     setEmail("");
     setRole("student");
-    setIdentifier(`CS202500${users.length + 1}`);
+    setIdentifier("");
     setDepartment("Computer Science");
     setLevel("HND 2");
-    setPhone("+1 555-0123");
+    setPhone("");
     setModalOpen(true);
   };
 
@@ -82,12 +83,7 @@ export const AdminUsers: React.FC = () => {
         level,
         phone,
         status: "active",
-        avatar:
-          role === "admin"
-            ? "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-            : role === "teacher"
-            ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
-            : "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
+        avatar: DEFAULT_AVATARS[role] || DEFAULT_AVATARS.student,
       });
     }
 
@@ -259,13 +255,15 @@ export const AdminUsers: React.FC = () => {
                       >
                         <Edit2 size={15} />
                       </button>
-                      <button
-                        onClick={() => setUserToDelete(u)}
-                        className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition"
-                        title="Delete User"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                      {u.role !== "admin" && (
+                        <button
+                          onClick={() => setUserToDelete(u)}
+                          className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition"
+                          title="Delete User"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -322,11 +320,14 @@ export const AdminUsers: React.FC = () => {
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500"
+                disabled={editingUser?.role === "admin"}
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <option value="student">Student</option>
                 <option value="teacher">Teacher / Faculty</option>
-                <option value="admin">Administrator</option>
+                {editingUser?.role === "admin" && (
+                  <option value="admin">Administrator (System Default)</option>
+                )}
               </select>
             </div>
 

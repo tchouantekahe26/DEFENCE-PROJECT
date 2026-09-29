@@ -31,6 +31,14 @@ const Attendance = sequelize.define("Attendance", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  session: {
+    type: DataTypes.ENUM("Morning", "Afternoon", "Evening"),
+    defaultValue: "Morning",
+  },
+  lecturerId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
   status: {
     type: DataTypes.ENUM("present", "absent", "late", "excused"),
     defaultValue: "present",

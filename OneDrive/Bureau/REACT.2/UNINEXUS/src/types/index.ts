@@ -10,8 +10,10 @@ export interface User {
   faculty?: string;
   program?: string;
   level?: string; // HND1, HND2, Level 100, Level 200, etc.
+  className?: string; // e.g. BA1A, BA1B, BA2A, etc.
   phone?: string;
   avatar?: string;
+  hideInfo?: boolean;
   status: "active" | "inactive" | "suspended";
   coursesTaught?: string[];
   createdAt?: string;
@@ -74,15 +76,18 @@ export interface Enrollment {
 
 export interface TimetableSlot {
   id: string;
-  courseCode: string;
+  courseCode?: string;
   courseTitle: string;
   lecturerName: string;
   classroom: string;
   day: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
-  startTime: string; // "08:00"
-  endTime: string; // "10:00"
+  startTime: string; // "07:30"
+  endTime: string; // "09:30"
   program: string;
   semester: string;
+  level?: string; // "Level 1" | "Level 2" | "Level 3"
+  className?: string; // e.g. "BA1A", "BA1B", "BA2A", etc.
+  hoursProgress?: string; // e.g. "36/40 hrs"
   color?: string;
 }
 
@@ -128,7 +133,7 @@ export interface AttendanceRecord {
   studentName: string;
   matricNumber: string;
   date: string;
-  session: "Morning" | "Afternoon" | "Evening";
+  session: string; // e.g. "07:30 - 09:30", "Period 1 (07:30 - 09:30)", etc.
   status: AttendanceStatus;
   absenceStatus?: AbsenceStatus;
   justificationId?: string;
@@ -200,6 +205,7 @@ export interface Announcement {
   id: string;
   title: string;
   description: string;
+  content?: string;
   author: string;
   authorRole: "Admin" | "Teacher";
   date: string;
@@ -207,6 +213,9 @@ export interface Announcement {
   department?: string;
   priority: "High" | "Normal" | "Low";
   category: "Academic" | "Exam" | "Events" | "Policy" | "General";
+  courseCode?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
   isRead?: boolean;
 }
 
@@ -216,10 +225,12 @@ export interface Notification {
   targetRole?: UserRole | "all";
   title: string;
   message: string;
-  category: "announcement" | "result" | "attendance" | "timetable" | "assignment" | "emergency" | "admin";
+  category?: "announcement" | "result" | "attendance" | "timetable" | "assignment" | "emergency" | "admin" | string;
+  type?: string;
   timestamp: string;
   isRead: boolean;
   actionLink?: string;
+  actionUrl?: string;
 }
 
 export interface EmergencyReport {
@@ -304,4 +315,27 @@ export interface AcademicSession {
   registrationOpen: boolean;
   resultsPublished: boolean;
   isActive: boolean;
+}
+
+export interface TeacherAvailabilitySlot {
+  day: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
+  startTime: string; // "07:30"
+  endTime: string;   // "09:30"
+  periodLabel: string; // "07:30 - 09:30"
+  isAvailable: boolean;
+}
+
+export interface TeacherAvailabilitySubmission {
+  id: string;
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+  department: string;
+  academicYear: string;
+  semester: string;
+  submittedAt: string;
+  slots: TeacherAvailabilitySlot[];
+  maxHoursPerWeek?: number;
+  notes?: string;
+  status: "SUBMITTED" | "REVIEWED" | "APPROVED";
 }

@@ -16,15 +16,21 @@ import {
 import type { EarlyWarningStudent } from "../../types";
 
 export const TeacherEarlyWarning: React.FC = () => {
-  const { earlyWarningStudents, addEarlyWarningIntervention } = useData();
+  const { earlyWarningStudents, addEarlyWarningIntervention, users } = useData();
 
   const [selectedStudent, setSelectedStudent] = useState<EarlyWarningStudent | null>(null);
   const [interventionNote, setInterventionNote] = useState("");
   const [search, setSearch] = useState("");
 
-  const atRiskCount = 8;
-  const warningsCount = 15;
-  const goodStandingCount = 103;
+  const atRiskCount = earlyWarningStudents.filter(
+    (s) => s.riskType.toLowerCase().includes("risk") || s.riskType.toLowerCase().includes("critical")
+  ).length;
+  const warningsCount = earlyWarningStudents.filter(
+    (s) => s.riskType.toLowerCase().includes("warning")
+  ).length;
+  const studentUsers = users.filter((u) => u.role === "student");
+  const flaggedIds = new Set(earlyWarningStudents.map((s) => s.matricNumber));
+  const goodStandingCount = studentUsers.filter((u) => !flaggedIds.has(u.identifier)).length;
 
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,51 +143,59 @@ export const TeacherEarlyWarning: React.FC = () => {
         </div>
 
         <div className="divide-y divide-slate-100">
-          {filteredStudents.map((item) => (
-            <div
-              key={item.id}
-              className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/60 transition px-2 rounded-2xl"
-            >
-              <div className="flex items-center gap-4">
-                <img
-                  src={
-                    item.avatar ||
-                    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80"
-                  }
-                  alt={item.studentName}
-                  className="w-11 h-11 rounded-2xl object-cover ring-1 ring-slate-200 shrink-0"
-                />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-slate-900 text-sm">
-                      {item.studentName}
-                    </h4>
-                    <span className="text-xs font-mono font-semibold text-slate-400">
-                      {item.matricNumber}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100">
-                      {item.riskType}
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      Attendance: <strong>{item.attendanceRate}%</strong> • Avg Mark:{" "}
-                      <strong>{item.averageMark}%</strong>
-                    </span>
+          {filteredStudents.length === 0 ? (
+            <div className="p-12 text-center text-slate-400">
+              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+              <p className="font-bold text-slate-700">All Students in Good Standing</p>
+              <p className="text-xs mt-1">No students have been flagged for attendance or grade risks.</p>
+            </div>
+          ) : (
+            filteredStudents.map((item) => (
+              <div
+                key={item.id}
+                className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/60 transition px-2 rounded-2xl"
+              >
+                <div className="flex items-center gap-4">
+                  <img
+                    src={
+                      item.avatar ||
+                      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80"
+                    }
+                    alt={item.studentName}
+                    className="w-11 h-11 rounded-2xl object-cover ring-1 ring-slate-200 shrink-0"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-slate-900 text-sm">
+                        {item.studentName}
+                      </h4>
+                      <span className="text-xs font-mono font-semibold text-slate-400">
+                        {item.matricNumber}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100">
+                        {item.riskType}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        Attendance: <strong>{item.attendanceRate}%</strong> • Avg Mark:{" "}
+                        <strong>{item.averageMark}%</strong>
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-3 self-end sm:self-auto">
-                <button
-                  onClick={() => setSelectedStudent(item)}
-                  className="px-4 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold text-xs border border-sky-200 transition"
-                >
-                  View Details & Intervene
-                </button>
+                <div className="flex items-center gap-3 self-end sm:self-auto">
+                  <button
+                    onClick={() => setSelectedStudent(item)}
+                    className="px-4 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold text-xs border border-sky-200 transition"
+                  >
+                    View Details & Intervene
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

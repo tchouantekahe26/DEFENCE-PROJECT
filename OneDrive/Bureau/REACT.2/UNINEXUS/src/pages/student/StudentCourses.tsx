@@ -31,8 +31,8 @@ export const StudentCourses: React.FC = () => {
   const [courseToDrop, setCourseToDrop] = useState<Course | null>(null);
   const [loadingAction, setLoadingAction] = useState(false);
 
-  const studentId = user?.id || "usr-student-1";
-  const studentName = user?.name || "Alex Johnson";
+  const studentId = user?.id || "";
+  const studentName = user?.name || "Student";
 
   const registeredCourseIds = enrollments
     .filter((e) => e.studentId === studentId && e.status === "registered")

@@ -48,13 +48,22 @@ const User = sequelize.define("User", {
     allowNull: true,
     defaultValue: "HND 2",
   },
+  className: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    defaultValue: "BA1A",
+  },
   phone: {
     type: DataTypes.STRING,
     allowNull: true,
   },
   avatar: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT("long"),
     allowNull: true,
+  },
+  hideInfo: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
   },
   status: {
     type: DataTypes.ENUM("active", "inactive", "suspended"),

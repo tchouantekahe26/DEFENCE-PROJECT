@@ -18,6 +18,13 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import type { UserRole } from "../../types";
+import { PolicyModal } from "../../components/common/PolicyModal";
+
+const LEVEL_CLASSES_MAP: Record<string, string[]> = {
+  "Level 1": ["BA1A", "BA1B"],
+  "Level 2": ["BA2A", "BA2B"],
+  "Level 3": ["BA3A", "BA3B"],
+};
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -29,6 +36,19 @@ export const Register: React.FC = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [identifier, setIdentifier] = useState("");
+  const [level, setLevel] = useState("Level 1");
+  const [className, setClassName] = useState("BA1A");
+  const [department, setDepartment] = useState("Computer Science");
+
+  const availableClasses = LEVEL_CLASSES_MAP[level] || ["BA1A", "BA1B"];
+
+  const handleLevelChange = (newLevel: string) => {
+    setLevel(newLevel);
+    const classes = LEVEL_CLASSES_MAP[newLevel] || [];
+    if (classes.length > 0) {
+      setClassName(classes[0]);
+    }
+  };
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -37,6 +57,8 @@ export const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [policyModalOpen, setPolicyModalOpen] = useState(false);
+  const [policyModalTab, setPolicyModalTab] = useState<"terms" | "privacy">("terms");
 
   // Password validation rules
   const hasMinLength = password.length >= 8;
@@ -75,9 +97,11 @@ export const Register: React.FC = () => {
         name: `${firstName.trim()} ${lastName.trim()}`,
         email: email.trim(),
         password,
-        role,
-        department: "Computer Science",
-        level: role === "student" ? "HND 1" : undefined,
+        role: "student",
+        identifier: identifier.trim() || `STU-${Math.floor(Math.random() * 9000 + 1000)}`,
+        department: department.trim() || "Computer Science",
+        level: level.trim() || "Level 2",
+        className: className.trim() || "BA1A",
       });
 
       // Crucial requirement #16: Redirect to LOGIN page (do not automatically log in)
@@ -105,7 +129,7 @@ export const Register: React.FC = () => {
               <GraduationCap size={24} />
             </div>
             <div>
-              <span className="text-2xl font-black tracking-tight block">UniNexus</span>
+              <span className="text-2xl font-black tracking-tight block">UNISPHERE</span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-200 block">
                 Connect · Manage · Succeed
               </span>
@@ -118,7 +142,7 @@ export const Register: React.FC = () => {
               Create Account
             </h2>
             <p className="text-indigo-100 text-sm mb-6">
-              Join UniNexus and get started on your academic journey
+              Join UNISPHERE and get started on your academic journey
             </p>
 
             {/* Feature Highlights */}
@@ -155,8 +179,31 @@ export const Register: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative z-10 text-xs text-indigo-200">
-            © 2026 UniNexus Platform. All rights reserved.
+          <div className="relative z-10 flex flex-col gap-1.5 text-xs text-indigo-200">
+            <div>© 2026 UNISPHERE Platform. All rights reserved.</div>
+            <div className="flex items-center gap-2 text-[11px] text-indigo-200/80">
+              <button
+                type="button"
+                onClick={() => {
+                  setPolicyModalTab("terms");
+                  setPolicyModalOpen(true);
+                }}
+                className="hover:text-white underline cursor-pointer transition"
+              >
+                Terms of Service
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setPolicyModalTab("privacy");
+                  setPolicyModalOpen(true);
+                }}
+                className="hover:text-white underline cursor-pointer transition"
+              >
+                Privacy Policy
+              </button>
+            </div>
           </div>
         </div>
 
@@ -179,48 +226,18 @@ export const Register: React.FC = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Role Selection Tabs */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                  I am a
-                </label>
-                <div className="grid grid-cols-3 gap-2 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setRole("student")}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                      role === "student"
-                        ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm"
-                        : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
-                    }`}
-                  >
-                    <GraduationCap size={15} />
-                    Student
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole("teacher")}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                      role === "teacher"
-                        ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm"
-                        : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
-                    }`}
-                  >
-                    <Users size={15} />
-                    Teacher
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole("admin")}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                      role === "admin"
-                        ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm"
-                        : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
-                    }`}
-                  >
-                    <Shield size={15} />
-                    Administrator
-                  </button>
+              {/* Registration Portal Notice */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 border border-indigo-200/80 dark:border-indigo-800/80 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                  <GraduationCap size={16} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
+                    Student Registration Portal
+                  </h4>
+                  <p className="text-[11px] text-indigo-700/80 dark:text-indigo-300/80 mt-0.5 leading-relaxed">
+                    Self-service registration is strictly for students. Faculty, Lecturer, and Staff accounts are managed and provisioned directly by the System Administrator.
+                  </p>
                 </div>
               </div>
 
@@ -269,18 +286,70 @@ export const Register: React.FC = () => {
                 />
               </div>
 
-              {/* Student ID / Staff ID */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  {role === "student" ? "Student Matric ID" : "Employee / Staff ID"}
-                </label>
-                <input
-                  type="text"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder={role === "student" ? "e.g. CS2025001" : "e.g. TCH102"}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600"
-                />
+              {/* Department & Level */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Department
+                  </label>
+                  <select
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 cursor-pointer"
+                  >
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Information Technology">Information Technology</option>
+                    <option value="Software Engineering">Software Engineering</option>
+                    <option value="Networks & Systems">Networks & Systems</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Academic Level
+                  </label>
+                  <select
+                    value={level}
+                    onChange={(e) => handleLevelChange(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 cursor-pointer"
+                  >
+                    <option value="Level 1">Level 1 (HND 1)</option>
+                    <option value="Level 2">Level 2 (HND 2)</option>
+                    <option value="Level 3">Level 3 (Bachelor)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Student Matric ID & Class Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Student Matric ID
+                  </label>
+                  <input
+                    type="text"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder="e.g. CS2026001"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Class / Group <span className="text-indigo-600 dark:text-indigo-400 font-bold">*</span>
+                  </label>
+                  <select
+                    value={className}
+                    onChange={(e) => setClassName(e.target.value)}
+                    required
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 cursor-pointer font-medium"
+                  >
+                    {availableClasses.map((cls) => (
+                      <option key={cls} value={cls}>
+                        {cls}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Password & Confirm Password */}
@@ -353,16 +422,41 @@ export const Register: React.FC = () => {
               </div>
 
               {/* Terms Checkbox */}
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-start gap-2.5 pt-1">
                 <input
                   type="checkbox"
                   id="terms"
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
-                  className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
+                  className="mt-0.5 w-4 h-4 accent-indigo-600 rounded cursor-pointer"
                 />
-                <label htmlFor="terms" className="text-xs text-slate-600 dark:text-slate-400 cursor-pointer">
-                  I agree to the <span className="text-indigo-600 font-semibold underline">Terms of Service</span> and <span className="text-indigo-600 font-semibold underline">Privacy Policy</span>
+                <label htmlFor="terms" className="text-xs text-slate-600 dark:text-slate-400 cursor-pointer leading-relaxed">
+                  I have read and agree to the{" "}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setPolicyModalTab("terms");
+                      setPolicyModalOpen(true);
+                    }}
+                    className="text-indigo-600 dark:text-indigo-400 font-bold underline hover:text-indigo-800 dark:hover:text-indigo-300 transition cursor-pointer"
+                  >
+                    Terms of Service
+                  </button>{" "}
+                  and{" "}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setPolicyModalTab("privacy");
+                      setPolicyModalOpen(true);
+                    }}
+                    className="text-indigo-600 dark:text-indigo-400 font-bold underline hover:text-indigo-800 dark:hover:text-indigo-300 transition cursor-pointer"
+                  >
+                    Privacy Policy
+                  </button>
                 </label>
               </div>
 
@@ -386,6 +480,15 @@ export const Register: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Policy Modal with Terms of Service & Privacy Policy */}
+      <PolicyModal
+        isOpen={policyModalOpen}
+        onClose={() => setPolicyModalOpen(false)}
+        initialTab={policyModalTab}
+        isAgreed={agreed}
+        onAccept={() => setAgreed(true)}
+      />
     </div>
   );
 };

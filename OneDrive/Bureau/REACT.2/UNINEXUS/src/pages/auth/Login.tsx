@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { useTheme } from "../../context/ThemeContext";
 import {
   Eye,
   EyeOff,
   GraduationCap,
   Users,
   Shield,
-  Sun,
-  Moon,
   CheckCircle2,
   Lock,
   Mail,
@@ -21,9 +18,8 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
 
-  const [email, setEmail] = useState("alex.johnson@uninexus.edu");
+  const [email, setEmail] = useState("admin@uninexus.edu");
   const [password, setPassword] = useState("password");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string>("");
@@ -39,10 +35,10 @@ export const Login: React.FC = () => {
 
   const handleRoleQuickFill = (role: UserRole) => {
     if (role === "student") {
-      setEmail("alex.johnson@uninexus.edu");
+      setEmail("adesimon0@gmail.com");
       setPassword("password");
     } else if (role === "teacher") {
-      setEmail("smith@uninexus.edu");
+      setEmail("tchoutouo@uninexus.edu");
       setPassword("password");
     } else if (role === "admin") {
       setEmail("admin@uninexus.edu");
@@ -89,7 +85,7 @@ export const Login: React.FC = () => {
               <GraduationCap size={24} />
             </div>
             <div>
-              <span className="text-2xl font-black tracking-tight block">UniNexus</span>
+              <span className="text-2xl font-black tracking-tight block">UNISPHERE</span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-200 block">
                 Connect · Manage · Succeed
               </span>
@@ -143,24 +139,13 @@ export const Login: React.FC = () => {
 
         {/* ================= RIGHT SIGN IN CARD ================= */}
         <div className="lg:col-span-7 p-8 sm:p-12 flex flex-col justify-between relative">
-          {/* Top corner theme toggle */}
-          <div className="absolute top-6 right-6">
-            <button
-              onClick={toggleTheme}
-              className="w-9 h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
-              title="Toggle Light/Dark Theme"
-            >
-              {isDark ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} />}
-            </button>
-          </div>
-
           <div className="max-w-md mx-auto w-full my-auto py-6">
             <div className="mb-6">
               <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">
                 Sign In
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Access your UniNexus account
+                Access your UNISPHERE account
               </p>
             </div>
 

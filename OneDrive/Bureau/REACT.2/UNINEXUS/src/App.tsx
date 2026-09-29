@@ -1,9 +1,9 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
+import { LanguageProvider } from "./context/LanguageContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { DataProvider } from "./context/DataContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AppLayout } from "./components/layout/AppLayout";
 import { Login } from "./pages/auth/Login";
 import { Register } from "./pages/auth/Register";
@@ -24,17 +24,20 @@ import { AdminTeachers } from "./pages/admin/AdminTeachers";
 
 // Teacher Pages
 import { TeacherDashboard } from "./pages/teacher/TeacherDashboard";
+import { TeacherTimetable } from "./pages/teacher/TeacherTimetable";
+import { TeacherAvailability } from "./pages/teacher/TeacherAvailability";
 import { TeacherAttendance } from "./pages/teacher/TeacherAttendance";
 import { TeacherJustifications } from "./pages/teacher/TeacherJustifications";
 import { TeacherMarks } from "./pages/teacher/TeacherMarks";
 import { TeacherStudents } from "./pages/teacher/TeacherStudents";
+import { TeacherAssignments } from "./pages/teacher/TeacherAssignments";
 import { TeacherAnnouncements } from "./pages/teacher/TeacherAnnouncements";
 import { TeacherSettings } from "./pages/teacher/TeacherSettings";
 
 // Student Pages
 import { StudentDashboard } from "./pages/student/StudentDashboard";
 import { StudentTimetable } from "./pages/student/StudentTimetable";
-import { StudentAbsences } from "./pages/student/StudentAbsences";
+import { StudentAttendance } from "./pages/student/StudentAttendance";
 import { StudentResults } from "./pages/student/StudentResults";
 import { StudentAnnouncements } from "./pages/student/StudentAnnouncements";
 import { StudentChat } from "./pages/student/StudentChat";
@@ -51,10 +54,11 @@ const RootRedirect: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <ThemeProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <DataProvider>
-            <Routes>
+      <LanguageProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <DataProvider>
+              <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -64,23 +68,21 @@ export const App: React.FC = () => {
               <Route
                 path="/admin/*"
                 element={
-                  <ProtectedRoute requiredRole="admin">
-                    <AppLayout>
-                      <Routes>
-                        <Route path="dashboard" element={<AdminDashboard />} />
-                        <Route path="users" element={<AdminUsers />} />
-                        <Route path="timetable" element={<AdminTimetable />} />
-                        <Route path="results" element={<AdminResults />} />
-                        <Route path="absences" element={<AdminJustifications />} />
-                        <Route path="announcements" element={<AdminAnnouncements />} />
-                        <Route path="emergency" element={<AdminEmergency />} />
-                        <Route path="settings" element={<AdminSettings />} />
-                        <Route path="students" element={<AdminStudents />} />
-                        <Route path="teachers" element={<AdminTeachers />} />
-                        <Route path="*" element={<Navigate to="dashboard" replace />} />
-                      </Routes>
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <Routes>
+                      <Route path="dashboard" element={<AdminDashboard />} />
+                      <Route path="users" element={<AdminUsers />} />
+                      <Route path="timetable" element={<AdminTimetable />} />
+                      <Route path="results" element={<AdminResults />} />
+                      <Route path="absences" element={<AdminJustifications />} />
+                      <Route path="announcements" element={<AdminAnnouncements />} />
+                      <Route path="emergency" element={<AdminEmergency />} />
+                      <Route path="settings" element={<AdminSettings />} />
+                      <Route path="students" element={<AdminStudents />} />
+                      <Route path="teachers" element={<AdminTeachers />} />
+                      <Route path="*" element={<Navigate to="dashboard" replace />} />
+                    </Routes>
+                  </AppLayout>
                 }
               />
 
@@ -88,20 +90,21 @@ export const App: React.FC = () => {
               <Route
                 path="/teacher/*"
                 element={
-                  <ProtectedRoute requiredRole="teacher">
-                    <AppLayout>
-                      <Routes>
-                        <Route path="dashboard" element={<TeacherDashboard />} />
-                        <Route path="attendance" element={<TeacherAttendance />} />
-                        <Route path="absences" element={<TeacherJustifications />} />
-                        <Route path="marks" element={<TeacherMarks />} />
-                        <Route path="students" element={<TeacherStudents />} />
-                        <Route path="announcements" element={<TeacherAnnouncements />} />
-                        <Route path="settings" element={<TeacherSettings />} />
-                        <Route path="*" element={<Navigate to="dashboard" replace />} />
-                      </Routes>
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <Routes>
+                      <Route path="dashboard" element={<TeacherDashboard />} />
+                      <Route path="timetable" element={<TeacherTimetable />} />
+                      <Route path="availability" element={<TeacherAvailability />} />
+                      <Route path="attendance" element={<TeacherAttendance />} />
+                      <Route path="absences" element={<TeacherJustifications />} />
+                      <Route path="marks" element={<TeacherMarks />} />
+                      <Route path="students" element={<TeacherStudents />} />
+                      <Route path="assignments" element={<TeacherAssignments />} />
+                      <Route path="announcements" element={<TeacherAnnouncements />} />
+                      <Route path="settings" element={<TeacherSettings />} />
+                      <Route path="*" element={<Navigate to="dashboard" replace />} />
+                    </Routes>
+                  </AppLayout>
                 }
               />
 
@@ -109,21 +112,20 @@ export const App: React.FC = () => {
               <Route
                 path="/student/*"
                 element={
-                  <ProtectedRoute requiredRole="student">
-                    <AppLayout>
-                      <Routes>
-                        <Route path="dashboard" element={<StudentDashboard />} />
-                        <Route path="timetable" element={<StudentTimetable />} />
-                        <Route path="absences" element={<StudentAbsences />} />
-                        <Route path="results" element={<StudentResults />} />
-                        <Route path="announcements" element={<StudentAnnouncements />} />
-                        <Route path="chat" element={<StudentChat />} />
-                        <Route path="emergency" element={<StudentEmergency />} />
-                        <Route path="settings" element={<StudentSettings />} />
-                        <Route path="*" element={<Navigate to="dashboard" replace />} />
-                      </Routes>
-                    </AppLayout>
-                  </ProtectedRoute>
+                  <AppLayout>
+                    <Routes>
+                      <Route path="dashboard" element={<StudentDashboard />} />
+                      <Route path="timetable" element={<StudentTimetable />} />
+                      <Route path="attendance" element={<StudentAttendance />} />
+                      <Route path="absences" element={<Navigate to="/student/attendance" replace />} />
+                      <Route path="results" element={<StudentResults />} />
+                      <Route path="announcements" element={<StudentAnnouncements />} />
+                      <Route path="chat" element={<StudentChat />} />
+                      <Route path="emergency" element={<StudentEmergency />} />
+                      <Route path="settings" element={<StudentSettings />} />
+                      <Route path="*" element={<Navigate to="dashboard" replace />} />
+                    </Routes>
+                  </AppLayout>
                 }
               />
 
@@ -134,6 +136,7 @@ export const App: React.FC = () => {
           </DataProvider>
         </AuthProvider>
       </BrowserRouter>
+      </LanguageProvider>
     </ThemeProvider>
   );
 };

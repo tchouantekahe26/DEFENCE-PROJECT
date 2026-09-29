@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { PasswordField } from "../../components/common/PasswordField";
+import { getUserAvatar, processAvatarUpload } from "../../utils/avatar";
 import {
   User,
   Mail,
@@ -12,17 +12,36 @@ import {
   CheckCircle2,
   Save,
   Shield,
+  Camera,
 } from "lucide-react";
 
 export const StudentProfile: React.FC = () => {
   const { user, studentProfile, updateProfile, changePassword } = useAuth();
 
-  const [phone, setPhone] = useState(user?.phone || "+1 555-0123");
-  const [avatar, setAvatar] = useState(
-    user?.avatar ||
-      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80"
-  );
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [avatar, setAvatar] = useState(getUserAvatar(user, "student"));
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  useEffect(() => {
+    if (user?.avatar) {
+      setAvatar(user.avatar);
+    }
+  }, [user?.avatar]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      try {
+        const dataUrl = await processAvatarUpload(file);
+        setAvatar(dataUrl);
+        updateProfile({ avatar: dataUrl });
+        setSavedSuccess(true);
+        setTimeout(() => setSavedSuccess(false), 3000);
+      } catch (err) {
+        console.error("Failed to process avatar", err);
+      }
+    }
+  };
 
   // Change Password state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -31,14 +50,6 @@ export const StudentProfile: React.FC = () => {
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
-
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setAvatar(String(reader.result));
-    reader.readAsDataURL(file);
-  };
 
   const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +81,7 @@ export const StudentProfile: React.FC = () => {
 
     setPasswordLoading(true);
     try {
-      await changePassword(currentPassword, newPassword);
+      await changePassword?.(currentPassword, newPassword);
       setPasswordSuccess("Password updated successfully!");
       setCurrentPassword("");
       setNewPassword("");
@@ -102,12 +113,23 @@ export const StudentProfile: React.FC = () => {
                 alt={user?.name}
                 className="w-28 h-28 rounded-3xl object-cover ring-4 ring-emerald-100 shadow-md"
               />
-              <span className="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 border-2 border-white rounded-full" />
+              <label
+                className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition shadow-sm"
+                title="Upload Profile Photo"
+              >
+                <Camera size={15} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                />
+              </label>
             </div>
 
             <h2 className="text-lg font-bold text-slate-900">{user?.name}</h2>
             <p className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full inline-block mt-1">
-              Student ID: {user?.identifier || "CS2025001"}
+              Student ID: {user?.identifier || "N/A"}
             </p>
 
             <div className="mt-6 pt-6 border-t border-slate-100 space-y-3 text-left">
@@ -130,21 +152,27 @@ export const StudentProfile: React.FC = () => {
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-medium">Level / Class</span>
+                <span className="text-slate-400 font-medium">Class / Group</span>
+                <span className="font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md">
+                  {user?.className || "BA1A"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400 font-medium">Academic Level</span>
                 <span className="font-bold text-slate-800">
-                  {user?.level || "HND 2"}
+                  {user?.level || "Level 1"}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-slate-400 font-medium">Advisor</span>
                 <span className="font-bold text-slate-800">
-                  {studentProfile?.advisorName || "Dr. Robert Smith"}
+                  {studentProfile?.advisorName || "Not Assigned"}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-slate-400 font-medium">Enrollment Date</span>
                 <span className="font-bold text-slate-800">
-                  {studentProfile?.enrollmentDate || "September 2023"}
+                  {studentProfile?.enrollmentDate || user?.createdAt || new Date().toISOString().split("T")[0]}
                 </span>
               </div>
             </div>
@@ -287,13 +315,20 @@ export const StudentProfile: React.FC = () => {
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                   Current Password
                 </label>
-                <PasswordField
-                  required
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Enter your current password"
-                  className="w-full pl-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 transition"
-                />
+                <div className="relative">
+                  <LockKeyhole
+                    size={18}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
+                  <input
+                    type="password"
+                    required
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter your current password"
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 transition"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -301,7 +336,8 @@ export const StudentProfile: React.FC = () => {
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                     New Password
                   </label>
-                  <PasswordField
+                  <input
+                    type="password"
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
@@ -314,7 +350,8 @@ export const StudentProfile: React.FC = () => {
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                     Confirm New Password
                   </label>
-                  <PasswordField
+                  <input
+                    type="password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
